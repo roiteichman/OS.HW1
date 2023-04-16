@@ -27,7 +27,7 @@ int main(int argc, char* argv[]) {
 
     const char* cmd_line = "chprompt abcd is the 4th letters in english";
 
-    ChmodCommand x(cmd_line);
+    ChangePrompt x(cmd_line);
 
 
 
