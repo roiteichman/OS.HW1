@@ -3,7 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <sstream>
-#include <sys/wait.h>
+//#include <sys/wait.h>
 #include <iomanip>
 #include "Commands.h"
 
@@ -118,3 +118,24 @@ void SmallShell::executeCommand(const char *cmd_line) {
   // cmd->execute();
   // Please note that you must fork smash process for some commands (e.g., external commands....)
 }
+
+Command::Command(const char *cmd_line) {}
+
+BuiltInCommand::BuiltInCommand(const char *cmd_line): Command(cmd_line) {
+
+    char cmd_line_non_const[COMMAND_ARGS_MAX_LENGTH];
+
+    int i = 0;
+    for (; cmd_line[i] != '\0'; ++i) {
+        cmd_line_non_const[i]=cmd_line[i];
+    }
+
+    cmd_line_non_const[i] = '\0';
+
+    _removeBackgroundSign(cmd_line_non_const);
+
+    _parseCommandLine(cmd_line_non_const, m_cmd_line);
+
+}
+
+ChmodCommand::ChmodCommand(const char *cmd_line): BuiltInCommand(cmd_line) {}

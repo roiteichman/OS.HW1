@@ -7,7 +7,7 @@
 #define COMMAND_MAX_ARGS (20)
 
 class Command {
-// TODO: Add your data members
+    // TODO: Add your data members
  public:
   Command(const char* cmd_line);
   virtual ~Command();
@@ -18,6 +18,7 @@ class Command {
 };
 
 class BuiltInCommand : public Command {
+    char* m_cmd_line[(COMMAND_ARGS_MAX_LENGTH/2)+1];
  public:
   BuiltInCommand(const char* cmd_line);
   virtual ~BuiltInCommand() {}
