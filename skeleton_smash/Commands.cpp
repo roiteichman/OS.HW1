@@ -1,11 +1,11 @@
-#include <unistd.h>
 #include <string.h>
 #include <iostream>
 #include <vector>
 #include <sstream>
-//#include <sys/wait.h>
+#include <sys/wait.h>
 #include <iomanip>
 #include "Commands.h"
+#include <unistd.h>
 
 using namespace std;
 
@@ -91,11 +91,16 @@ SmallShell::~SmallShell() {
 * Creates and returns a pointer to Command class which matches the given command line (cmd_line)
 */
 Command * SmallShell::CreateCommand(const char* cmd_line) {
-	// For example:
-/*
+
   string cmd_s = _trim(string(cmd_line));
   string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
 
+    if (firstWord.compare("chprompt") == 0) {
+        return new ChangePrompt(cmd_line);
+    }
+
+    // For example:
+/*
   if (firstWord.compare("pwd") == 0) {
     return new GetCurrDirCommand(cmd_line);
   }
@@ -117,6 +122,26 @@ void SmallShell::executeCommand(const char *cmd_line) {
   // Command* cmd = CreateCommand(cmd_line);
   // cmd->execute();
   // Please note that you must fork smash process for some commands (e.g., external commands....)
+
+    Command* cmd = CreateCommand(cmd_line);
+    BuiltInCommand* bi_cmd = dynamic_cast<BuiltInCommand*>(cmd);
+    // if the command is Build-In Command, we get a pointer, else we get nullptr
+    if (bi_cmd != nullptr){
+        bi_cmd->execute();
+    }
+    else{
+        pid_t pid = fork();
+        if (pid==0){
+            cmd->execute();
+        }
+        else if (pid>0){
+            wait(NULL);
+        }
+        else{
+            return -1;
+        }
+    }
+
 }
 
 char *BuiltInCommand::RemoveBackgroundSign(const char *cmd_line) {

@@ -1,6 +1,6 @@
 #include <iostream>
 #include <unistd.h>
-//#include <sys/wait.h>
+#include <sys/wait.h>
 #include <signal.h>
 #include "Commands.h"
 #include "signals.h"
@@ -28,7 +28,6 @@ int main(int argc, char* argv[]) {
     const char* cmd_line = "chprompt abcd is the 4th letters in english &";
 
     ChangePrompt x(cmd_line);
-
 
 
     return 0;
