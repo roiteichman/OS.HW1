@@ -139,3 +139,7 @@ BuiltInCommand::BuiltInCommand(const char *cmd_line): Command(cmd_line) {
 }
 
 ChangePrompt::ChangePrompt(const char *cmd_line): BuiltInCommand(cmd_line) {}
+
+void ChangePrompt::execute() {
+
+}

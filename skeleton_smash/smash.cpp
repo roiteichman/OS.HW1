@@ -25,7 +25,7 @@ int main(int argc, char* argv[]) {
         smash.executeCommand(cmd_line.c_str());
     }*/
 
-    const char* cmd_line = "chprompt abcd is the 4th letters in english";
+    const char* cmd_line = "chprompt abcd is the 4th letters in english &";
 
     ChangePrompt x(cmd_line);
 
