@@ -119,10 +119,7 @@ void SmallShell::executeCommand(const char *cmd_line) {
   // Please note that you must fork smash process for some commands (e.g., external commands....)
 }
 
-Command::Command(const char *cmd_line) {}
-
-BuiltInCommand::BuiltInCommand(const char *cmd_line): Command(cmd_line) {
-
+char *BuiltInCommand::RemoveBackgroundSign(const char *cmd_line) {
     char cmd_line_non_const[COMMAND_ARGS_MAX_LENGTH];
 
     int i = 0;
@@ -135,7 +132,15 @@ BuiltInCommand::BuiltInCommand(const char *cmd_line): Command(cmd_line) {
     _removeBackgroundSign(cmd_line_non_const);
 
     _parseCommandLine(cmd_line_non_const, m_cmd_line);
+}
+char* RemoveBackgroundSign(const char* cmd_line);
 
+
+Command::Command(const char *cmd_line) {}
+
+BuiltInCommand::BuiltInCommand(const char *cmd_line): Command(cmd_line) {
+
+    RemoveBackgroundSign(cmd_line);
 }
 
 ChangePrompt::ChangePrompt(const char *cmd_line): BuiltInCommand(cmd_line) {}

@@ -21,6 +21,7 @@ class BuiltInCommand : public Command {
     char* m_cmd_line[(COMMAND_ARGS_MAX_LENGTH/2)+1];
  public:
   BuiltInCommand(const char* cmd_line);
+  char* RemoveBackgroundSign(const char* cmd_line);
   virtual ~BuiltInCommand() = default;
 };
 
