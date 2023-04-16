@@ -10,7 +10,7 @@ class Command {
     // TODO: Add your data members
  public:
   Command(const char* cmd_line);
-  virtual ~Command();
+  virtual ~Command() = default;
   virtual void execute() = 0;
   //virtual void prepare();
   //virtual void cleanup();
@@ -21,7 +21,7 @@ class BuiltInCommand : public Command {
     char* m_cmd_line[(COMMAND_ARGS_MAX_LENGTH/2)+1];
  public:
   BuiltInCommand(const char* cmd_line);
-  virtual ~BuiltInCommand() {}
+  virtual ~BuiltInCommand() = default;
 };
 
 class ExternalCommand : public Command {
@@ -52,7 +52,7 @@ class RedirectionCommand : public Command {
 class ChangePrompt : public BuiltInCommand{
  public:
     ChangePrompt(const char* cmd_line);
-    virtual ~ChangePrompt() {}
+    virtual ~ChangePrompt() = default;
     void execute() override;
 };
 
