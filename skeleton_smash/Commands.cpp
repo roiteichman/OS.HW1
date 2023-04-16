@@ -2,7 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <sstream>
-#include <sys/wait.h>
+//#include <sys/wait.h>
 #include <iomanip>
 #include "Commands.h"
 #include <unistd.h>
@@ -123,26 +123,30 @@ void SmallShell::executeCommand(const char *cmd_line) {
   // cmd->execute();
   // Please note that you must fork smash process for some commands (e.g., external commands....)
 
+
     Command* cmd = CreateCommand(cmd_line);
     BuiltInCommand* bi_cmd = dynamic_cast<BuiltInCommand*>(cmd);
     // if the command is Build-In Command, we get a pointer, else we get nullptr
     if (bi_cmd != nullptr){
+        // if its Build-In command execute them directly
         bi_cmd->execute();
     }
     else{
+        /*
+        // fork and let your child execute them and wait for him
         pid_t pid = fork();
+
         if (pid==0){
             cmd->execute();
         }
         else if (pid>0){
             wait(NULL);
-        }
+        }*/
     }
-
 }
 
-char *BuiltInCommand::RemoveBackgroundSign(const char *cmd_line) {
-    char cmd_line_non_const[COMMAND_ARGS_MAX_LENGTH];
+int BuiltInCommand::RemoveBackgroundSign(const char *cmd_line) {
+    char cmd_line_non_const[COMMAND_MAX_CHARACTERS];
 
     int i = 0;
     for (; cmd_line[i] != '\0'; ++i) {
@@ -153,20 +157,90 @@ char *BuiltInCommand::RemoveBackgroundSign(const char *cmd_line) {
 
     _removeBackgroundSign(cmd_line_non_const);
 
-    _parseCommandLine(cmd_line_non_const, m_cmd_line);
+    return _parseCommandLine(cmd_line_non_const, m_cmd_line);
 }
-char* RemoveBackgroundSign(const char* cmd_line);
-
 
 Command::Command(const char *cmd_line) {}
 
 BuiltInCommand::BuiltInCommand(const char *cmd_line): Command(cmd_line) {
 
-    RemoveBackgroundSign(cmd_line);
+    m_desc_len_in_words = RemoveBackgroundSign(cmd_line);
+}
+
+char *const *BuiltInCommand::getMCmdLine() const {
+    return m_cmd_line;
+}
+
+int BuiltInCommand::getMDescLenInWords() const {
+    return m_desc_len_in_words;
 }
 
 ChangePrompt::ChangePrompt(const char *cmd_line): BuiltInCommand(cmd_line) {}
 
-void ChangePrompt::execute() {
+void ChangePrompt::fillNewPrompt(char* prompt_new) {
 
+    // from the second word copy letter by letter to new sentence
+    int i=1;
+    // width is the num of words in the prompt include the Command
+    // that is why we start from index 1 to jump over the Command
+    int width = BuiltInCommand::getMDescLenInWords();
+    int last=0;
+    for (; i < width ; ++i) {
+        int j = 0;
+        for (; BuiltInCommand::getMCmdLine()[i][j] != '\0' ; ++j) {
+            if (!last){
+                prompt_new[j] = BuiltInCommand::getMCmdLine()[i][j];
+            }
+            else {
+                prompt_new[(last+1)+j] = BuiltInCommand::getMCmdLine()[i][j];
+            }
+        }
+        if (!last) {
+            prompt_new[j] = ' ';
+            last=j;
+        }
+        else {
+            prompt_new[(last+1) + j] = ' ';
+            last = (last+1) + j;
+        }
+    }
+    prompt_new[last] = '\0';
+}
+
+
+void ChangePrompt::execute() {
+    char prompt_new[COMMAND_MAX_CHARACTERS];
+    fillNewPrompt(prompt_new);
+    int length = 0;
+    while (prompt_new[length]!='\0') {
+        length++;
+    }
+
+    do {
+        for (int i = 0; i < length; ++i) {
+            std::cout << prompt_new[i];
+        }
+        std::cout << ">" << std::endl;
+        std::string cmd_line;
+        std::getline(std::cin, cmd_line);
+        //smash.executeCommand(cmd_line.c_str());
+    } while (0);
+}
+
+
+ShowPidCommand::ShowPidCommand(const char *cmd_line): BuiltInCommand(cmd_line) {}
+
+void ShowPidCommand::execute() {
+    cout << "smash pid is " << getpid() << endl;
+}
+
+
+GetCurrDirCommand::GetCurrDirCommand(const char *cmd_line): BuiltInCommand(cmd_line) {}
+
+#define DIR_MAX_LEN 200
+
+void GetCurrDirCommand::execute() {
+    char buff[DIR_MAX_LEN] = {0};
+    getcwd(buff, DIR_MAX_LEN); //errors?
+    cout << buff << endl;
 }

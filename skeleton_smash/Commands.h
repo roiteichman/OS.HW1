@@ -5,6 +5,7 @@
 
 #define COMMAND_ARGS_MAX_LENGTH (200)
 #define COMMAND_MAX_ARGS (20)
+#define COMMAND_MAX_CHARACTERS (80)
 
 class Command {
     // TODO: Add your data members
@@ -18,10 +19,15 @@ class Command {
 };
 
 class BuiltInCommand : public Command {
-    char* m_cmd_line[(COMMAND_ARGS_MAX_LENGTH/2)+1];
+    char* m_cmd_line[(COMMAND_MAX_CHARACTERS/2)+1];
+    int m_desc_len_in_words;
  public:
   BuiltInCommand(const char* cmd_line);
-  char* RemoveBackgroundSign(const char* cmd_line);
+  char* const *getMCmdLine() const;
+
+    int getMDescLenInWords() const;
+
+    int RemoveBackgroundSign(const char* cmd_line);
   virtual ~BuiltInCommand() = default;
 };
 
@@ -55,6 +61,7 @@ class ChangePrompt : public BuiltInCommand{
     ChangePrompt(const char* cmd_line);
     virtual ~ChangePrompt() = default;
     void execute() override;
+    void fillNewPrompt (char* prompt_new);
 };
 
 class ChangeDirCommand : public BuiltInCommand {
