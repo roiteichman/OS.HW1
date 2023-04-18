@@ -211,20 +211,11 @@ void ChangePrompt::fillNewPrompt(char* prompt_new) {
 void ChangePrompt::execute() {
     char prompt_new[COMMAND_MAX_CHARACTERS];
     fillNewPrompt(prompt_new);
-    int length = 0;
-    while (prompt_new[length]!='\0') {
-        length++;
+    if (prompt_new[0] == '\0') {
+        SmallShell::getInstance().changePrompt(SMASH_DEF_NAME);
     }
-
-    do {
-        for (int i = 0; i < length; ++i) {
-            std::cout << prompt_new[i];
-        }
-        std::cout << ">" << std::endl;
-        std::string cmd_line;
-        std::getline(std::cin, cmd_line);
-        //smash.executeCommand(cmd_line.c_str());
-    } while (0);
+    else
+        SmallShell::getInstance().changePrompt(prompt_new);
 }
 
 

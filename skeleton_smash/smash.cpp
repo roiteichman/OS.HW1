@@ -19,18 +19,23 @@ int main(int argc, char* argv[]) {
     //TODO: setup sig alarm handler
 
     SmallShell& smash = SmallShell::getInstance();
+
+
     while(true) {
-        std::cout << "smash> ";
+        smash.printPrompt();
         std::string cmd_line;
         std::getline(std::cin, cmd_line);
         smash.executeCommand(cmd_line.c_str());
     }
-*/
+
     const char* cmd_line = "chprompt abcd is the 4th letters in english &";
 
     ChangePrompt x(cmd_line);
     char sentence[34];
     x.fillNewPrompt(sentence);
+    x.execute();
+
+/*
     for (int i = 0; i < 34; ++i) {
         std::cout << sentence[i];
     }
@@ -40,6 +45,5 @@ int main(int argc, char* argv[]) {
     y.execute();
     GetCurrDirCommand z(cmd_line);
     z.execute();
-
     return 0;
 }
