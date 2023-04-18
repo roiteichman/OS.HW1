@@ -22,6 +22,8 @@ const std::string WHITESPACE = " \n\r\t\f\v";
 #define FUNC_EXIT()
 #endif
 
+#define SMASH_DEF_NAME "smash"
+
 string _ltrim(const std::string& s)
 {
   size_t start = s.find_first_not_of(WHITESPACE);
@@ -79,12 +81,24 @@ void _removeBackgroundSign(char* cmd_line) {
 
 // TODO: Add your implementation for classes in Commands.h 
 
-SmallShell::SmallShell() {
-// TODO: add your implementation
-}
+SmallShell::SmallShell() :
+    m_prompt("smash") {}
 
 SmallShell::~SmallShell() {
 // TODO: add your implementation
+}
+
+void copyStr (char* src, char* dest) {
+    while (*src != '\0') *dest++ = *src++;
+    *dest = '\0';
+}
+
+void SmallShell::changePrompt(const char *prompt) {
+    int i=0;
+    for (; prompt[i] != '\0'; i++) {
+        m_prompt[i] = prompt[i];
+    }
+    m_prompt[i] = '\0';
 }
 
 /**

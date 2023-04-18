@@ -15,7 +15,6 @@ int main(int argc, char* argv[]) {
         perror("smash error: failed to set ctrl-C handler");
     }
 */
-/*
     //TODO: setup sig alarm handler
 
     SmallShell& smash = SmallShell::getInstance();
@@ -29,7 +28,6 @@ int main(int argc, char* argv[]) {
     }
 
     const char* cmd_line = "chprompt abcd is the 4th letters in english &";
-
     ChangePrompt x(cmd_line);
     char sentence[34];
     x.fillNewPrompt(sentence);
@@ -41,6 +39,7 @@ int main(int argc, char* argv[]) {
     }
     std::cout << ">" << std::endl;
 
+*/
     ShowPidCommand y(cmd_line);
     y.execute();
     GetCurrDirCommand z(cmd_line);

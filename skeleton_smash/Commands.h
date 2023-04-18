@@ -183,6 +183,7 @@ class KillCommand : public BuiltInCommand {
 class SmallShell {
  private:
   // TODO: Add your data members
+  char m_prompt[COMMAND_MAX_CHARACTERS];
   SmallShell();
  public:
   Command *CreateCommand(const char* cmd_line);
@@ -195,6 +196,8 @@ class SmallShell {
     return instance;
   }
   ~SmallShell();
+  void changePrompt (const char* prompt);
+  void printPrompt() const {std::cout << m_prompt << ">";}
   void executeCommand(const char* cmd_line);
   // TODO: add extra methods as needed
 };
