@@ -159,7 +159,7 @@ void SmallShell::executeCommand(const char *cmd_line) {
     }
 }
 
-int BuiltInCommand::RemoveBackgroundSign(const char *cmd_line) {
+int Command::setCMDLine_R_BG_s(const char *cmd_line) {
     char cmd_line_non_const[COMMAND_MAX_CHARACTERS];
 
     int i = 0;
@@ -174,13 +174,27 @@ int BuiltInCommand::RemoveBackgroundSign(const char *cmd_line) {
     return _parseCommandLine(cmd_line_non_const, m_cmd_line);
 }
 
-Command::Command(const char *cmd_line) {}
-
-BuiltInCommand::BuiltInCommand(const char *cmd_line): Command(cmd_line) {
-
-    m_desc_len_in_words = RemoveBackgroundSign(cmd_line);
+Command::Command(const char *cmd_line): m_is_back_ground(_isBackgroundComamnd(cmd_line)), m_desc_len_in_words(
+        setCMDLine_R_BG_s(cmd_line)) {
 }
 
+BuiltInCommand::BuiltInCommand(const char *cmd_line): Command(cmd_line) {}
+
+ExternalCommand::ExternalCommand(const char *cmd_line): Command(cmd_line){}
+
+void ExternalCommand::execute() {
+    pid_t pid = fork();
+    if (pid==0){
+        // child
+        execv(m_cmd_line[0], m_cmd_line);
+    }
+    else if (pid>0){
+
+    }
+    else{
+
+    }
+}
 char *const *BuiltInCommand::getMCmdLine() const {
     return m_cmd_line;
 }

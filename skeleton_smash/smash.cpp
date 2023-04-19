@@ -19,30 +19,20 @@ int main(int argc, char* argv[]) {
 
     SmallShell& smash = SmallShell::getInstance();
 
-
+/*
     while(true) {
         smash.printPrompt();
         std::string cmd_line;
         std::getline(std::cin, cmd_line);
         smash.executeCommand(cmd_line.c_str());
     }
-
-    const char* cmd_line = "chprompt abcd is the 4th letters in english &";
-    ChangePrompt x(cmd_line);
-    char sentence[34];
-    x.fillNewPrompt(sentence);
-    x.execute();
-
-/*
-    for (int i = 0; i < 34; ++i) {
-        std::cout << sentence[i];
-    }
-    std::cout << ">" << std::endl;
-
 */
-    ShowPidCommand y(cmd_line);
-    y.execute();
-    GetCurrDirCommand z(cmd_line);
-    z.execute();
+    const char* cmd_line = "hello_world.exe";
+
+
+    ExternalCommand w(cmd_line);
+    w.execute();
+
+
     return 0;
 }

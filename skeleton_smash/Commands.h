@@ -9,32 +9,35 @@
 
 class Command {
     // TODO: Add your data members
- public:
+    bool m_is_back_ground;
+protected:
+    char* m_cmd_line[(COMMAND_MAX_CHARACTERS/2)+1];
+    int m_desc_len_in_words;
+public:
   Command(const char* cmd_line);
   virtual ~Command() = default;
   virtual void execute() = 0;
-  //virtual void prepare();
+  int setCMDLine_R_BG_s(const char* cmd_line);
+
+    //virtual void prepare();
   //virtual void cleanup();
   // TODO: Add your extra methods if needed
 };
 
 class BuiltInCommand : public Command {
-    char* m_cmd_line[(COMMAND_MAX_CHARACTERS/2)+1];
-    int m_desc_len_in_words;
  public:
   BuiltInCommand(const char* cmd_line);
   char* const *getMCmdLine() const;
 
     int getMDescLenInWords() const;
 
-    int RemoveBackgroundSign(const char* cmd_line);
   virtual ~BuiltInCommand() = default;
 };
 
 class ExternalCommand : public Command {
- public:
+public:
   ExternalCommand(const char* cmd_line);
-  virtual ~ExternalCommand() {}
+  virtual ~ExternalCommand() = default;
   void execute() override;
 };
 
