@@ -189,7 +189,7 @@ void ExternalCommand::execute() {
         execv(m_cmd_line[0], m_cmd_line);
     }
     else if (pid>0){
-
+        wait(NULL);
     }
     else{
 
