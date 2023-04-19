@@ -9,8 +9,8 @@
 
 class Command {
     // TODO: Add your data members
-    bool m_is_back_ground;
 protected:
+    bool m_is_back_ground;
     char* m_cmd_line[(COMMAND_MAX_CHARACTERS/2)+1];
     int m_desc_len_in_words;
 public:
