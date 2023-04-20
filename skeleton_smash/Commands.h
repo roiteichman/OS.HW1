@@ -69,22 +69,26 @@ class ChangePrompt : public BuiltInCommand{
 
 class ChangeDirCommand : public BuiltInCommand {
 // TODO: Add your data members public:
+  char** m_plastPwd;
+public:
   ChangeDirCommand(const char* cmd_line, char** plastPwd);
-  virtual ~ChangeDirCommand() {}
+  virtual ~ChangeDirCommand() = default;
   void execute() override;
+  char **getMPlastPwd() const;
+
 };
 
 class GetCurrDirCommand : public BuiltInCommand {
  public:
   GetCurrDirCommand(const char* cmd_line);
-  virtual ~GetCurrDirCommand() {}
+  virtual ~GetCurrDirCommand() = default;
   void execute() override;
 };
 
 class ShowPidCommand : public BuiltInCommand {
  public:
   ShowPidCommand(const char* cmd_line);
-  virtual ~ShowPidCommand() {}
+  virtual ~ShowPidCommand() = default;
   void execute() override;
 };
 
@@ -187,6 +191,7 @@ class SmallShell {
  private:
   // TODO: Add your data members
   char m_prompt[COMMAND_MAX_CHARACTERS];
+  char** m_p_lastPWD;
   SmallShell();
  public:
   Command *CreateCommand(const char* cmd_line);
@@ -202,7 +207,10 @@ class SmallShell {
   void changePrompt (const char* prompt);
   void printPrompt() const {std::cout << m_prompt << ">";}
   void executeCommand(const char* cmd_line);
-  // TODO: add extra methods as needed
+  char **getMPLastPwd() const;
+
+    void setMPLastPwd(char **mPLastPwd);
+    // TODO: add extra methods as needed
 };
 
 #endif //SMASH_COMMAND_H_

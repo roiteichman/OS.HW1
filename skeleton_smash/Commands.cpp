@@ -24,6 +24,7 @@ const std::string WHITESPACE = " \n\r\t\f\v";
 
 #define SMASH_DEF_NAME "smash"
 #define JUST_PROMPT 1
+#define ANOTHER_ARGS 2
 
 string _ltrim(const std::string& s)
 {
@@ -83,7 +84,7 @@ void _removeBackgroundSign(char* cmd_line) {
 // TODO: Add your implementation for classes in Commands.h 
 
 SmallShell::SmallShell() :
-    m_prompt("smash") {}
+    m_prompt("smash"), m_p_lastPWD(nullptr) {}
 
 SmallShell::~SmallShell() {
 // TODO: add your implementation
@@ -121,6 +122,11 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   else if (firstWord.compare("showpid") == 0) {
     return new ShowPidCommand(cmd_line);
   }
+
+  else if (firstWord.compare("cd") == 0) {
+      return new ChangeDirCommand(cmd_line, SmallShell::getInstance().getMPLastPwd());
+  }
+
 
     // For example:
 /*
@@ -162,6 +168,15 @@ void SmallShell::executeCommand(const char *cmd_line) {
     }
 }
 
+char **SmallShell::getMPLastPwd() const {
+    return m_p_lastPWD;
+}
+
+void SmallShell::setMPLastPwd(char **mPLastPwd) {
+    m_p_lastPWD = mPLastPwd;
+}
+
+
 int Command::setCMDLine_R_BG_s(const char *cmd_line) {
     char cmd_line_non_const[COMMAND_MAX_CHARACTERS];
 
@@ -177,9 +192,9 @@ int Command::setCMDLine_R_BG_s(const char *cmd_line) {
     return _parseCommandLine(cmd_line_non_const, m_cmd_line);
 }
 
-Command::Command(const char *cmd_line): m_is_back_ground(_isBackgroundComamnd(cmd_line)), m_desc_len_in_words(
-        setCMDLine_R_BG_s(cmd_line)) {
-}
+Command::Command(const char *cmd_line): m_is_back_ground(_isBackgroundComamnd(cmd_line)),
+                                        m_desc_len_in_words(setCMDLine_R_BG_s(cmd_line))
+                                        {}
 
 BuiltInCommand::BuiltInCommand(const char *cmd_line): Command(cmd_line) {}
 
@@ -247,7 +262,6 @@ void ChangePrompt::execute() {
         SmallShell::getInstance().changePrompt(prompt_new);
 }
 
-
 ShowPidCommand::ShowPidCommand(const char *cmd_line): BuiltInCommand(cmd_line) {}
 
 void ShowPidCommand::execute() {
@@ -263,4 +277,27 @@ void GetCurrDirCommand::execute() {
     char buff[DIR_MAX_LEN] = {0};
     getcwd(buff, DIR_MAX_LEN); //errors?
     cout << buff << endl;
+}
+
+ChangeDirCommand::ChangeDirCommand(const char* cmd_line, char** plastPwd): BuiltInCommand(cmd_line), m_plastPwd(plastPwd){}
+
+void ChangeDirCommand::execute() {
+    char* path = BuiltInCommand::getMCmdLine()[1];
+    char* another_args = BuiltInCommand::getMCmdLine()[ANOTHER_ARGS];
+    if (!another_args){
+        perror("smash error: cd: too many arguments");
+    }
+    else if (getMPlastPwd() == nullptr){
+        perror("smash error: cd: OLDPWD not set");
+    }
+    else if (chdir(path) != 0){
+        perror("smash error: cd failed");
+    }
+    else{
+        SmallShell::getInstance().setMPLastPwd(&path);
+    }
+}
+
+char **ChangeDirCommand::getMPlastPwd() const {
+    return m_plastPwd;
 }
