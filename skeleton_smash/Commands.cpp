@@ -294,7 +294,10 @@ void ChangeDirCommand::execute() {
 
     if (strcmp(curr_path, "-")==0){
         curr_path = *getMPlastPwd();
-        cout << "curr_path is:" << curr_path << endl;
+        cout << "curr_path is: ";
+        for (int i = 0; curr_path[i]; ++i) {
+            cout << curr_path[i];
+        }
         /// TODO - remove that
     }
 
