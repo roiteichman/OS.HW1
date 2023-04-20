@@ -192,7 +192,7 @@ void ExternalCommand::execute() {
     }
     else if (pid>0){
         if (!m_is_back_ground){
-            waitpid(pid, NULL);
+            wait(NULL);
         }
     }
     else{
