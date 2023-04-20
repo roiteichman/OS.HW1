@@ -283,11 +283,23 @@ ChangeDirCommand::ChangeDirCommand(const char* cmd_line, char** plastPwd): Built
 
 void ChangeDirCommand::execute() {
     char* path = BuiltInCommand::getMCmdLine()[1];
+    string str_path = path;
     char* another_args = BuiltInCommand::getMCmdLine()[ANOTHER_ARGS];
-    if (!another_args){
+    if (another_args){
         perror("smash error: cd: too many arguments");
     }
-    else if (getMPlastPwd() == nullptr){
+
+
+
+    /*
+    string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
+
+    if (firstWord.compare("chprompt") == 0) {
+        return new ChangePrompt(cmd_line);
+    }*/
+
+
+    else if (getMPlastPwd() == nullptr && str_path.compare("-") == 0){
         perror("smash error: cd: OLDPWD not set");
     }
     else if (chdir(path) != 0){
