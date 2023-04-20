@@ -289,6 +289,14 @@ ChangeDirCommand::ChangeDirCommand(const char* cmd_line, char** plastPwd): Built
 void ChangeDirCommand::execute() {
 
     char* curr_path = getMCmdLine()[1];
+    string str_curr_path = curr_path;
+    bool go_back;
+
+    if (strcmp(curr_path, "-")==0){
+        curr_path = *getMPlastPwd();
+        cout << "curr_path is:" << curr_path << endl;
+        /// TODO - remove that
+    }
 
     if (chdir(curr_path) != 0){
         perror("smash error: cd failed");
