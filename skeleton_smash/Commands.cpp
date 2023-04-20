@@ -211,30 +211,19 @@ ChangePrompt::ChangePrompt(const char *cmd_line): BuiltInCommand(cmd_line) {}
 
 void ChangePrompt::fillNewPrompt(char* prompt_new) {
 
-    // from the second word copy letter by letter to new sentence
-    int i=1;
+    // from the second word copy letter by letter to new sentence just the first word after it
+    int first_word_after_command=1;
     // width is the num of words in the prompt include the Command
     // that is why we start from index 1 to jump over the Command
-    int width = BuiltInCommand::getMDescLenInWords();
     int last=0;
-    for (; i < width ; ++i) {
+    while (!last){
         int j = 0;
-        for (; BuiltInCommand::getMCmdLine()[i][j] != '\0' ; ++j) {
-            if (!last){
-                prompt_new[j] = BuiltInCommand::getMCmdLine()[i][j];
-            }
-            else {
-                prompt_new[(last+1)+j] = BuiltInCommand::getMCmdLine()[i][j];
-            }
+        for (; BuiltInCommand::getMCmdLine()[first_word_after_command][j] != '\0' ; ++j) {
+            prompt_new[j] = BuiltInCommand::getMCmdLine()[first_word_after_command][j];
+
         }
-        if (!last) {
-            prompt_new[j] = ' ';
-            last=j;
-        }
-        else {
-            prompt_new[(last+1) + j] = ' ';
-            last = (last+1) + j;
-        }
+        prompt_new[j] = ' ';
+        last=j;
     }
     prompt_new[last] = '\0';
 }
