@@ -279,37 +279,41 @@ void GetCurrDirCommand::execute() {
     cout << buff << endl;
 }
 
-ChangeDirCommand::ChangeDirCommand(const char* cmd_line, char** plastPwd): BuiltInCommand(cmd_line), m_plastPwd(plastPwd){}
-
-void ChangeDirCommand::execute() {
-    char* path = BuiltInCommand::getMCmdLine()[1];
-    string str_path = path;
-    char* another_args = BuiltInCommand::getMCmdLine()[ANOTHER_ARGS];
-    if (another_args){
-        perror("smash error: cd: too many arguments");
-    }
-
-
-
-    /*
-    string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
-
-    if (firstWord.compare("chprompt") == 0) {
-        return new ChangePrompt(cmd_line);
-    }*/
-
-
-    else if (getMPlastPwd() == nullptr && str_path.compare("-") == 0){
-        perror("smash error: cd: OLDPWD not set");
-    }
-    else if (chdir(path) != 0){
-        perror("smash error: cd failed");
-    }
-    else{
-        SmallShell::getInstance().setMPLastPwd(&path);
-    }
-}
-
 char **ChangeDirCommand::getMPlastPwd() const {
     return m_plastPwd;
 }
+
+ChangeDirCommand::ChangeDirCommand(const char* cmd_line, char** plastPwd): BuiltInCommand(cmd_line), m_plastPwd(plastPwd){}
+
+void ChangeDirCommand::execute() {
+    char *curr_path = BuiltInCommand::getMCmdLine()[1];
+    string str_curr_path = curr_path;
+    string last_path;
+    if (getMPlastPwd()){
+        last_path=*getMPlastPwd();
+    }
+    else{
+        last_path="\0";
+    }
+    char *another_args = BuiltInCommand::getMCmdLine()[ANOTHER_ARGS];
+    bool go_back;
+    if (str_curr_path.compare("-") == 0) {
+        go_back = true;
+    }
+
+    if (another_args) {
+        perror("smash error: cd: too many arguments");
+    } else if (getMPlastPwd() == nullptr && go_back) {
+        perror("smash error: cd: OLDPWD not set");
+    } else {
+        if (go_back) {
+            strcpy(curr_path, last_path.c_str());
+        }
+        if (chdir(curr_path) != 0) {
+            perror("smash error: cd failed");
+            SmallShell::getInstance().setMPLastPwd(&curr_path);
+        }
+    }
+}
+
+
