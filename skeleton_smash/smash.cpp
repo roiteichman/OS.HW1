@@ -28,12 +28,15 @@ int main(int argc, char* argv[]) {
         smash.executeCommand(cmd_line.c_str());
     }
 
-    /*
-    const char* cmd_line = "hello_world.exe";
+/*
+    const char* cmd_line = "cd C:\\Users\\teich\\";
+    char* last_path = "C:\\Users";
 
-
-    ExternalCommand w(cmd_line);
-    w.execute();
+    ChangeDirCommand change(cmd_line, &last_path);
+    change.execute();
+    for (int i = 0; (last_path[i]) ; ++i) {
+        std::cout << last_path[i];
+    }
 */
 
     return 0;

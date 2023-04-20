@@ -124,7 +124,8 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   }
 
   else if (firstWord.compare("cd") == 0) {
-      return new ChangeDirCommand(cmd_line, SmallShell::getInstance().getMPLastPwd());
+      char* p_lastPWD = SmallShell::getInstance().getMPLastPwd();
+      return new ChangeDirCommand(cmd_line, &p_lastPWD);
   }
 
 
@@ -168,11 +169,11 @@ void SmallShell::executeCommand(const char *cmd_line) {
     }
 }
 
-char **SmallShell::getMPLastPwd() const {
+char *SmallShell::getMPLastPwd() const {
     return m_p_lastPWD;
 }
 
-void SmallShell::setMPLastPwd(char **mPLastPwd) {
+void SmallShell::setMPLastPwd(char *mPLastPwd) {
     m_p_lastPWD = mPLastPwd;
 }
 
@@ -279,13 +280,25 @@ void GetCurrDirCommand::execute() {
     cout << buff << endl;
 }
 
-char **ChangeDirCommand::getMPlastPwd() const {
+char** ChangeDirCommand::getMPlastPwd() const {
     return m_plastPwd;
 }
 
 ChangeDirCommand::ChangeDirCommand(const char* cmd_line, char** plastPwd): BuiltInCommand(cmd_line), m_plastPwd(plastPwd){}
 
 void ChangeDirCommand::execute() {
+
+    char* curr_path = getMCmdLine()[1];
+
+    if (chdir(curr_path) != 0){
+        perror("smash error: cd failed");
+    }
+    else{
+        SmallShell::getInstance().setMPLastPwd(curr_path);
+    }
+
+
+    /*
     char *curr_path = BuiltInCommand::getMCmdLine()[1];
     string str_curr_path = curr_path;
     string last_path;
@@ -303,17 +316,29 @@ void ChangeDirCommand::execute() {
 
     if (another_args) {
         perror("smash error: cd: too many arguments");
-    } else if (getMPlastPwd() == nullptr && go_back) {
+    }
+    else if (getMPlastPwd() == nullptr && go_back) {
         perror("smash error: cd: OLDPWD not set");
     } else {
         if (go_back) {
+            cout << "last_path is:" << last_path << endl;
             strcpy(curr_path, last_path.c_str());
+            cout << "curr_path is:" << curr_path << endl;
         }
         if (chdir(curr_path) != 0) {
             perror("smash error: cd failed");
-            SmallShell::getInstance().setMPLastPwd(&curr_path);
+        }
+        else{
+
+            //cout << "curr_path is:" << curr_path << endl;
+            //cout << "last_path is:" << last_path << endl;
+            cout << "getMPlastPwd is:" << getMPlastPwd() << endl;
+
+
+            SmallShell::getInstance().setMPLastPwd(curr_path);
         }
     }
+     */
 }
 
 
