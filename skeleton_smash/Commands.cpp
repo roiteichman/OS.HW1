@@ -25,6 +25,8 @@ const std::string WHITESPACE = " \n\r\t\f\v";
 #define SMASH_DEF_NAME "smash"
 #define JUST_PROMPT 1
 #define ANOTHER_ARGS 2
+#define DIR_MAX_LEN 200
+
 
 string _ltrim(const std::string& s)
 {
@@ -84,7 +86,13 @@ void _removeBackgroundSign(char* cmd_line) {
 // TODO: Add your implementation for classes in Commands.h 
 
 SmallShell::SmallShell() :
-    m_prompt("smash"), m_p_lastPWD(nullptr) {}
+    m_prompt("smash") {
+    char buff[COMMAND_ARGS_MAX_LENGTH] = {0};
+    getcwd(buff, COMMAND_ARGS_MAX_LENGTH);
+
+    strcpy(m_p_currPWD, buff);
+    strcpy(m_p_lastPWD, buff);
+}
 
 SmallShell::~SmallShell() {
 // TODO: add your implementation
@@ -124,10 +132,12 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   }
 
   else if (firstWord.compare("cd") == 0) {
-      char* p_lastPWD = SmallShell::getInstance().getMPLastPwd();
-      return new ChangeDirCommand(cmd_line, &p_lastPWD);
+     char lastPWD[COMMAND_ARGS_MAX_LENGTH]={0};
+     strcpy(lastPWD, SmallShell::getInstance().getMPLastPwd());
+     char ** p_lastPwd;
+     p_lastPwd[1]=lastPWD;
+     return new ChangeDirCommand(cmd_line, p_lastPwd);
   }
-
 
     // For example:
 /*
@@ -169,14 +179,23 @@ void SmallShell::executeCommand(const char *cmd_line) {
     }
 }
 
-char *SmallShell::getMPLastPwd() const {
+
+
+void SmallShell::setMPLastPwd(char *lastPwd) {
+    strcpy(m_p_lastPWD, lastPwd);
+}
+
+void SmallShell::setMPCurrPwd(char *currPwd) {
+    strcpy(m_p_currPWD, currPwd);
+}
+
+const char *SmallShell::getMPLastPwd() const {
     return m_p_lastPWD;
 }
 
-void SmallShell::setMPLastPwd(char *mPLastPwd) {
-    m_p_lastPWD = mPLastPwd;
+const char *SmallShell::getMPCurrPwd() const {
+    return m_p_currPWD;
 }
-
 
 int Command::setCMDLine_R_BG_s(const char *cmd_line) {
     char cmd_line_non_const[COMMAND_MAX_CHARACTERS];
@@ -272,84 +291,47 @@ void ShowPidCommand::execute() {
 
 GetCurrDirCommand::GetCurrDirCommand(const char *cmd_line): BuiltInCommand(cmd_line) {}
 
-#define DIR_MAX_LEN 200
-
 void GetCurrDirCommand::execute() {
     char buff[DIR_MAX_LEN] = {0};
     getcwd(buff, DIR_MAX_LEN); //errors?
     cout << buff << endl;
 }
 
-char** ChangeDirCommand::getMPlastPwd() const {
-    return m_plastPwd;
-}
 
-ChangeDirCommand::ChangeDirCommand(const char* cmd_line, char** plastPwd): BuiltInCommand(cmd_line), m_plastPwd(plastPwd){}
+
+ChangeDirCommand::ChangeDirCommand(const char* cmd_line, char** plastPwd): BuiltInCommand(cmd_line){
+    strcpy(m_plastPwd, plastPwd[1]);
+}
 
 void ChangeDirCommand::execute() {
 
-    char* curr_path = getMCmdLine()[1];
-    string str_curr_path = curr_path;
-    bool go_back;
+    char asked_path[COMMAND_ARGS_MAX_LENGTH];
+    char curr_pwd[COMMAND_ARGS_MAX_LENGTH];
+    char old_pwd[COMMAND_ARGS_MAX_LENGTH];
+    strcpy(asked_path, getMCmdLine()[1]);
+    strcpy(curr_pwd, SmallShell::getInstance().getMPCurrPwd());
+    strcpy(old_pwd, SmallShell::getInstance().getMPLastPwd());
 
-    if (strcmp(curr_path, "-")==0){
-        curr_path = *getMPlastPwd();
-        cout << "curr_path is: ";
-        for (int i = 0; curr_path[i]; ++i) {
-            cout << curr_path[i];
-        }
-        /// TODO - remove that
-    }
-
-    if (chdir(curr_path) != 0){
-        perror("smash error: cd failed");
-    }
-    else{
-        SmallShell::getInstance().setMPLastPwd(curr_path);
-    }
-
-
-    /*
-    char *curr_path = BuiltInCommand::getMCmdLine()[1];
-    string str_curr_path = curr_path;
-    string last_path;
-    if (getMPlastPwd()){
-        last_path=*getMPlastPwd();
-    }
-    else{
-        last_path="\0";
-    }
     char *another_args = BuiltInCommand::getMCmdLine()[ANOTHER_ARGS];
-    bool go_back;
-    if (str_curr_path.compare("-") == 0) {
-        go_back = true;
-    }
-
     if (another_args) {
         perror("smash error: cd: too many arguments");
     }
-    else if (getMPlastPwd() == nullptr && go_back) {
-        perror("smash error: cd: OLDPWD not set");
-    } else {
-        if (go_back) {
-            cout << "last_path is:" << last_path << endl;
-            strcpy(curr_path, last_path.c_str());
-            cout << "curr_path is:" << curr_path << endl;
-        }
-        if (chdir(curr_path) != 0) {
-            perror("smash error: cd failed");
-        }
-        else{
 
-            //cout << "curr_path is:" << curr_path << endl;
-            //cout << "last_path is:" << last_path << endl;
-            cout << "getMPlastPwd is:" << getMPlastPwd() << endl;
-
-
-            SmallShell::getInstance().setMPLastPwd(curr_path);
+    else if (strcmp(asked_path, "-") == 0){
+        if (strcmp(old_pwd, curr_pwd) == 0){
+            perror("smash error: cd: OLDPWD not set");
         }
+        strcpy(asked_path, old_pwd);
     }
-     */
+
+    else if (chdir(asked_path) != 0){
+        perror("smash error: cd failed");
+    }
+    else{
+        SmallShell::getInstance().setMPCurrPwd(asked_path);
+        SmallShell::getInstance().setMPLastPwd(curr_pwd);
+    }
 }
+
 
 
