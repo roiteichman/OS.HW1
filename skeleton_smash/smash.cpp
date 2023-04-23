@@ -39,6 +39,11 @@ int main(int argc, char* argv[]) {
     }
 */
 
+/*    const char* cmd_line = "print.exe you are very good!";
+    ExternalCommand w(cmd_line)
+    w.execute();
+*/
+
     return 0;
 }
 

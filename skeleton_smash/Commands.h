@@ -11,6 +11,7 @@ class Command {
     // TODO: Add your data members
 protected:
     bool m_is_back_ground;
+    bool m_is_complex;
     char* m_cmd_line[(COMMAND_MAX_CHARACTERS/2)+1];
     int m_desc_len_in_words;
 public:

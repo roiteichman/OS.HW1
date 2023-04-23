@@ -98,6 +98,26 @@ SmallShell::~SmallShell() {
 // TODO: add your implementation
 }
 
+bool _isComplexCommand (const char* cmd_line) {
+    while (*cmd_line != 0) {
+        if (*cmd_line == '*' || *cmd_line == '?') {
+            return true;
+        }
+        cmd_line++;
+    }
+    return false;
+}
+
+
+void cmdForBash (char** cmd_source, char* dest) {
+    while (*cmd_source != NULL) {
+        strcpy(dest, *cmd_source);
+        dest += strlen(*cmd_source++);
+        *dest++ = ' ';
+    }
+}
+
+
 void copyStr (char* src, char* dest) {
     while (*src != '\0') *dest++ = *src++;
     *dest = '\0';
@@ -159,6 +179,9 @@ void SmallShell::executeCommand(const char *cmd_line) {
 
 
     Command* cmd = CreateCommand(cmd_line);
+    cmd->execute();
+
+/*
     BuiltInCommand* bi_cmd = dynamic_cast<BuiltInCommand*>(cmd);
     // if the command is Build-In Command, we get a pointer, else we get nullptr
     if (bi_cmd != nullptr){
@@ -176,7 +199,7 @@ void SmallShell::executeCommand(const char *cmd_line) {
         else if (pid>0){
             wait(NULL);
         }*/
-    }
+    }*/
 }
 
 
@@ -213,6 +236,7 @@ int Command::setCMDLine_R_BG_s(const char *cmd_line) {
 }
 
 Command::Command(const char *cmd_line): m_is_back_ground(_isBackgroundComamnd(cmd_line)),
+                                        m_is_complex(_isComplexCommand(cmd_line)),
                                         m_desc_len_in_words(setCMDLine_R_BG_s(cmd_line))
                                         {}
 
@@ -223,9 +247,18 @@ ExternalCommand::ExternalCommand(const char *cmd_line): Command(cmd_line){}
 void ExternalCommand::execute() {
     pid_t pid = fork();
     if (pid==0){
-         //child
-        execv(m_cmd_line[0], m_cmd_line);
+        // child
+        if (m_is_complex) {
+            char cmd_for_bash[COMMAND_MAX_CHARACTERS];
+            cmdForBash (m_cmd_line, cmd_for_bash);
+            execl("/bin/bash", "bash", "-c", cmd_for_bash, NULL);
+        }
+        else {
+            execv(m_cmd_line[0], m_cmd_line);
+        }
     }
+
+}
     else if (pid>0){
         if (!m_is_back_ground){
             wait(NULL);
