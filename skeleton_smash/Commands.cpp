@@ -134,7 +134,7 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   else if (firstWord.compare("cd") == 0) {
      char lastPWD[COMMAND_ARGS_MAX_LENGTH]={0};
      strcpy(lastPWD, SmallShell::getInstance().getMPLastPwd());
-     char ** p_lastPwd;
+     char * p_lastPwd[COMMAND_ARGS_MAX_LENGTH];
      p_lastPwd[1]=lastPWD;
      return new ChangeDirCommand(cmd_line, p_lastPwd);
   }
@@ -324,7 +324,7 @@ void ChangeDirCommand::execute() {
         strcpy(asked_path, old_pwd);
     }
 
-    else if (chdir(asked_path) != 0){
+    if (chdir(asked_path) != 0){
         perror("smash error: cd failed");
     }
     else{
