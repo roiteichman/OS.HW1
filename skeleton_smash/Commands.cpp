@@ -199,7 +199,6 @@ void SmallShell::executeCommand(const char *cmd_line) {
         else if (pid>0){
             wait(NULL);
         }*/
-    }*/
 }
 
 
