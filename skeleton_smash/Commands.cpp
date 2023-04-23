@@ -10,7 +10,7 @@
 #include <iomanip>
 #include "Commands.h"
 #include <unistd.h>
-#include "cstring"
+#include <time.h>
 
 using namespace std;
 
@@ -215,8 +215,12 @@ const char *SmallShell::getMPLastPwd() const {
     return m_p_lastPWD;
 }
 
-const char *SmallShell::getMPCurrPwd() const {
+const char* SmallShell::getMPCurrPwd() const {
     return m_p_currPWD;
+}
+
+JobsList &SmallShell::getMJobList(){
+    return m_job_list;
 }
 
 
@@ -235,10 +239,11 @@ int Command::setCMDLine_R_BG_s(const char *cmd_line) {
     return _parseCommandLine(cmd_line_non_const, m_cmd_line);
 }
 
-Command::Command(const char *cmd_line):
-        m_is_back_ground(_isBackgroundComamnd(cmd_line)),
-        m_is_complex(_isComplexCommand(cmd_line)),
-        m_desc_len_in_words(setCMDLine_R_BG_s(cmd_line)) {
+Command::Command(const char *cmd_line): m_is_back_ground(_isBackgroundComamnd(cmd_line)),
+                                        m_is_complex(_isComplexCommand(cmd_line)),
+                                        m_desc_len_in_words(setCMDLine_R_BG_s(cmd_line))
+{
+    strcpy(m_full_cmd_line, cmd_line);
 }
 
 BuiltInCommand::BuiltInCommand(const char *cmd_line): Command(cmd_line) {}
@@ -253,16 +258,28 @@ void ExternalCommand::execute() {
             char cmd_for_bash[COMMAND_MAX_CHARACTERS];
             cmdForBash (m_cmd_line, cmd_for_bash);
             execl("/bin/bash", "bash", "-c", cmd_for_bash, NULL);
+            /// TODO: errors
         }
         else {
             execv(m_cmd_line[0], m_cmd_line);
+            /// TODO: errors
         }
     }
     else if (pid>0){
+        Job* new_job = new Job(-1, pid, FOREGROUND, false, this->m_full_cmd_line);
+        // foreground
         if (!m_is_back_ground){
             wait(NULL);
         }
+        // background
+        else{
+            new_job->m_state=BACKGROUND;
+            int index = SmallShell::getInstance().getMJobList().addNewJob(new_job);
+
+            // TODO: wait
+        }
     }
+    // error in fork
     else{
 
     }
@@ -363,5 +380,33 @@ void ChangeDirCommand::execute() {
     else{
         SmallShell::getInstance().setMPCurrPwd(asked_path);
         SmallShell::getInstance().setMPLastPwd(curr_pwd);
+    }
+}
+
+Job::Job(int job_id, int pid, STATE state, bool is_stopped, char* cmd_line): m_job_id(job_id), m_pid(pid),
+m_state(state), m_insert_time(time(NULL)), m_is_stopped(is_stopped) {
+    strcpy(m_cmd_line, cmd_line);
+}
+
+JobsList::~JobsList() {
+    for (Job* job: m_list) {
+        delete job;
+    }
+}
+
+int JobsList::addNewJob(Job* job){
+    int new_index = (*m_list.end())->m_job_id+1;
+    job->m_job_id=new_index;
+    m_list.push_back(job);
+    return new_index;
+}
+
+void JobsList::removeFinishedJobs() {
+    for (Job* job: m_list) {
+        pid_t res = waitpid(job->m_pid, NULL, WNOHANG);
+        if (res){
+            delete job;
+            m_list.remove(job);
+        }
     }
 }

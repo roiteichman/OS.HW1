@@ -2,6 +2,7 @@
 #define SMASH_COMMAND_H_
 
 #include <vector>
+#include <list>
 
 #define COMMAND_ARGS_MAX_LENGTH (200)
 #define COMMAND_MAX_ARGS (20)
@@ -12,16 +13,17 @@ class Command {
 protected:
     bool m_is_back_ground;
     bool m_is_complex;
-    char* m_cmd_line[(COMMAND_MAX_CHARACTERS/2)+1];
+    char* m_cmd_line[COMMAND_MAX_ARGS+1];
     int m_desc_len_in_words;
+    char m_full_cmd_line[COMMAND_MAX_CHARACTERS+1];
 public:
   Command(const char* cmd_line);
   virtual ~Command() = default;
   virtual void execute() = 0;
   int setCMDLine_R_BG_s(const char* cmd_line);
-
-    //virtual void prepare();
+  //virtual void prepare();
   //virtual void cleanup();
+
   // TODO: Add your extra methods if needed
 };
 
@@ -100,17 +102,34 @@ public:
   void execute() override;
 };
 
+enum STATE{FOREGROUND, BACKGROUND, STOPPED};
+
+struct Job{
+    int m_job_id;
+    int m_pid;
+    STATE m_state;
+    bool m_is_stopped;
+    char m_cmd_line[COMMAND_MAX_CHARACTERS+1];
+    time_t m_insert_time;
+
+    Job(int job_id, int pid, STATE state, bool is_stopped, char* cmd_line);
+    ~Job() = default;
+    Job(Job const&) = delete;
+    void operator=(Job const&) = delete;
+};
+
 
 class JobsList {
- public:
+    std::list<Job*> m_list;
+public:
   class JobEntry {
    // TODO: Add your data members
   };
  // TODO: Add your data members
  public:
-  JobsList();
+  JobsList() = default;
   ~JobsList();
-  void addJob(Command* cmd, bool isStopped = false);
+  int addNewJob(Job* job);
   void printJobsList();
   void killAllJobs();
   void removeFinishedJobs();
@@ -192,6 +211,7 @@ class SmallShell {
   char m_prompt[COMMAND_MAX_CHARACTERS];
   char m_p_lastPWD[COMMAND_ARGS_MAX_LENGTH];
   char m_p_currPWD[COMMAND_ARGS_MAX_LENGTH];
+  JobsList m_job_list;
   SmallShell();
  public:
   Command *CreateCommand(const char* cmd_line);
@@ -215,6 +235,7 @@ class SmallShell {
     void setMPLastPwd(char* lastPwd);
   void setMPCurrPwd(char* currPwd);
 
+    JobsList &getMJobList();
 
     // TODO: add extra methods as needed
 };
