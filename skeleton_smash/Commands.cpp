@@ -257,7 +257,6 @@ void ExternalCommand::execute() {
         }
     }
 
-}
     else if (pid>0){
         if (!m_is_back_ground){
             wait(NULL);
@@ -267,6 +266,7 @@ void ExternalCommand::execute() {
 
     }
 }
+
 char *const *BuiltInCommand::getMCmdLine() const {
     return m_cmd_line;
 }
