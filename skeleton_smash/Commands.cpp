@@ -1,3 +1,7 @@
+//
+// Created by teich on 23/04/2023.
+//
+
 #include <string.h>
 #include <iostream>
 #include <vector>
@@ -6,6 +10,7 @@
 #include <iomanip>
 #include "Commands.h"
 #include <unistd.h>
+#include "cstring"
 
 using namespace std;
 
@@ -30,73 +35,59 @@ const std::string WHITESPACE = " \n\r\t\f\v";
 
 string _ltrim(const std::string& s)
 {
-  size_t start = s.find_first_not_of(WHITESPACE);
-  return (start == std::string::npos) ? "" : s.substr(start);
+    size_t start = s.find_first_not_of(WHITESPACE);
+    return (start == std::string::npos) ? "" : s.substr(start);
 }
 
 string _rtrim(const std::string& s)
 {
-  size_t end = s.find_last_not_of(WHITESPACE);
-  return (end == std::string::npos) ? "" : s.substr(0, end + 1);
+    size_t end = s.find_last_not_of(WHITESPACE);
+    return (end == std::string::npos) ? "" : s.substr(0, end + 1);
 }
 
 string _trim(const std::string& s)
 {
-  return _rtrim(_ltrim(s));
+    return _rtrim(_ltrim(s));
 }
 
 int _parseCommandLine(const char* cmd_line, char** args) {
-  FUNC_ENTRY()
-  int i = 0;
-  std::istringstream iss(_trim(string(cmd_line)).c_str());
-  for(std::string s; iss >> s; ) {
-    args[i] = (char*)malloc(s.length()+1);
-    memset(args[i], 0, s.length()+1);
-    strcpy(args[i], s.c_str());
-    args[++i] = NULL;
-  }
-  return i;
+    FUNC_ENTRY()
+    int i = 0;
+    std::istringstream iss(_trim(string(cmd_line)).c_str());
+    for(std::string s; iss >> s; ) {
+        args[i] = (char*)malloc(s.length()+1);
+        memset(args[i], 0, s.length()+1);
+        strcpy(args[i], s.c_str());
+        args[++i] = NULL;
+    }
+    return i;
 
-  FUNC_EXIT()
+    FUNC_EXIT()
 }
 
 bool _isBackgroundComamnd(const char* cmd_line) {
-  const string str(cmd_line);
-  return str[str.find_last_not_of(WHITESPACE)] == '&';
+    const string str(cmd_line);
+    return str[str.find_last_not_of(WHITESPACE)] == '&';
 }
 
 void _removeBackgroundSign(char* cmd_line) {
-  const string str(cmd_line);
-  // find last character other than spaces
-  unsigned int idx = str.find_last_not_of(WHITESPACE);
-  // if all characters are spaces then return
-  if (idx == string::npos) {
-    return;
-  }
-  // if the command line does not end with & then return
-  if (cmd_line[idx] != '&') {
-    return;
-  }
-  // replace the & (background sign) with space and then remove all tailing spaces.
-  cmd_line[idx] = ' ';
-  // truncate the command line string up to the last non-space character
-  cmd_line[str.find_last_not_of(WHITESPACE, idx) + 1] = 0;
+    const string str(cmd_line);
+    // find last character other than spaces
+    unsigned int idx = str.find_last_not_of(WHITESPACE);
+    // if all characters are spaces then return
+    if (idx == string::npos) {
+        return;
+    }
+    // if the command line does not end with & then return
+    if (cmd_line[idx] != '&') {
+        return;
+    }
+    // replace the & (background sign) with space and then remove all tailing spaces.
+    cmd_line[idx] = ' ';
+    // truncate the command line string up to the last non-space character
+    cmd_line[str.find_last_not_of(WHITESPACE, idx) + 1] = 0;
 }
 
-// TODO: Add your implementation for classes in Commands.h 
-
-SmallShell::SmallShell() :
-    m_prompt("smash") {
-    char buff[COMMAND_ARGS_MAX_LENGTH] = {0};
-    getcwd(buff, COMMAND_ARGS_MAX_LENGTH);
-
-    strcpy(m_p_currPWD, buff);
-    strcpy(m_p_lastPWD, buff);
-}
-
-SmallShell::~SmallShell() {
-// TODO: add your implementation
-}
 
 bool _isComplexCommand (const char* cmd_line) {
     while (*cmd_line != 0) {
@@ -118,6 +109,23 @@ void cmdForBash (char** cmd_source, char* dest) {
 }
 
 
+
+// TODO: Add your implementation for classes in Commands.h
+
+SmallShell::SmallShell() :
+        m_prompt("smash") {
+    char buff[COMMAND_ARGS_MAX_LENGTH] = {0};
+    getcwd(buff, COMMAND_ARGS_MAX_LENGTH);
+
+    strcpy(m_p_currPWD, buff);
+    strcpy(m_p_lastPWD, buff);
+}
+
+SmallShell::~SmallShell() {
+// TODO: add your implementation
+}
+
+
 void copyStr (char* src, char* dest) {
     while (*src != '\0') *dest++ = *src++;
     *dest = '\0';
@@ -136,46 +144,41 @@ void SmallShell::changePrompt(const char *prompt) {
 */
 Command * SmallShell::CreateCommand(const char* cmd_line) {
 
-  string cmd_s = _trim(string(cmd_line));
-  string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
+    string cmd_s = _trim(string(cmd_line));
+    string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
 
-  if (firstWord.compare("chprompt") == 0) {
-      return new ChangePrompt(cmd_line);
-  }
+    if (firstWord.compare("chprompt") == 0) {
+        return new ChangePrompt(cmd_line);
+    }
 
-  else if (firstWord.compare("pwd") == 0) {
-      return new GetCurrDirCommand(cmd_line);
-  }
+    else if (firstWord.compare("pwd") == 0) {
+        return new GetCurrDirCommand(cmd_line);
+    }
+    else if (firstWord.compare("showpid") == 0) {
+        return new ShowPidCommand(cmd_line);
+    }
+    else if (firstWord.compare("cd") == 0) {
+        char lastPWD[COMMAND_ARGS_MAX_LENGTH]={0};
+        strcpy(lastPWD, SmallShell::getInstance().getMPLastPwd());
+        char * p_lastPwd[COMMAND_ARGS_MAX_LENGTH];
+        p_lastPwd[1]=lastPWD;
+        return new ChangeDirCommand(cmd_line, p_lastPwd);
+    }
 
-  else if (firstWord.compare("showpid") == 0) {
-    return new ShowPidCommand(cmd_line);
-  }
-
-  else if (firstWord.compare("cd") == 0) {
-     char lastPWD[COMMAND_ARGS_MAX_LENGTH]={0};
-     strcpy(lastPWD, SmallShell::getInstance().getMPLastPwd());
-     char * p_lastPwd[COMMAND_ARGS_MAX_LENGTH];
-     p_lastPwd[1]=lastPWD;
-     return new ChangeDirCommand(cmd_line, p_lastPwd);
-  }
-
-    // For example:
-/*
-  else if ...
-  .....
-  else {
-    return new ExternalCommand(cmd_line);
-  }
-  */
-  return nullptr;
+//  else if ...
+//  .....
+    else {
+        return new ExternalCommand(cmd_line);
+    }
+    return nullptr;
 }
 
 void SmallShell::executeCommand(const char *cmd_line) {
-  // TODO: Add your implementation here
-  // for example:
-  // Command* cmd = CreateCommand(cmd_line);
-  // cmd->execute();
-  // Please note that you must fork smash process for some commands (e.g., external commands....)
+    // TODO: Add your implementation here
+    // for example:
+    // Command* cmd = CreateCommand(cmd_line);
+    // cmd->execute();
+    // Please note that you must fork smash process for some commands (e.g., external commands....)
 
 
     Command* cmd = CreateCommand(cmd_line);
@@ -189,7 +192,6 @@ void SmallShell::executeCommand(const char *cmd_line) {
         bi_cmd->execute();
     }
     else{
-        /*
         // fork and let your child execute them and wait for him
         pid_t pid = fork();
 
@@ -200,8 +202,6 @@ void SmallShell::executeCommand(const char *cmd_line) {
             wait(NULL);
         }*/
 }
-
-
 
 void SmallShell::setMPLastPwd(char *lastPwd) {
     strcpy(m_p_lastPWD, lastPwd);
@@ -219,6 +219,7 @@ const char *SmallShell::getMPCurrPwd() const {
     return m_p_currPWD;
 }
 
+
 int Command::setCMDLine_R_BG_s(const char *cmd_line) {
     char cmd_line_non_const[COMMAND_MAX_CHARACTERS];
 
@@ -234,10 +235,11 @@ int Command::setCMDLine_R_BG_s(const char *cmd_line) {
     return _parseCommandLine(cmd_line_non_const, m_cmd_line);
 }
 
-Command::Command(const char *cmd_line): m_is_back_ground(_isBackgroundComamnd(cmd_line)),
-                                        m_is_complex(_isComplexCommand(cmd_line)),
-                                        m_desc_len_in_words(setCMDLine_R_BG_s(cmd_line))
-                                        {}
+Command::Command(const char *cmd_line):
+        m_is_back_ground(_isBackgroundComamnd(cmd_line)),
+        m_is_complex(_isComplexCommand(cmd_line)),
+        m_desc_len_in_words(setCMDLine_R_BG_s(cmd_line)) {
+}
 
 BuiltInCommand::BuiltInCommand(const char *cmd_line): Command(cmd_line) {}
 
@@ -256,7 +258,6 @@ void ExternalCommand::execute() {
             execv(m_cmd_line[0], m_cmd_line);
         }
     }
-
     else if (pid>0){
         if (!m_is_back_ground){
             wait(NULL);
@@ -266,7 +267,6 @@ void ExternalCommand::execute() {
 
     }
 }
-
 char *const *BuiltInCommand::getMCmdLine() const {
     return m_cmd_line;
 }
@@ -304,6 +304,7 @@ void ChangePrompt::fillNewPrompt(char* prompt_new) {
 }
 
 
+
 void ChangePrompt::execute() {
     char prompt_new[COMMAND_MAX_CHARACTERS];
     fillNewPrompt(prompt_new);
@@ -313,6 +314,7 @@ void ChangePrompt::execute() {
     else
         SmallShell::getInstance().changePrompt(prompt_new);
 }
+
 
 ShowPidCommand::ShowPidCommand(const char *cmd_line): BuiltInCommand(cmd_line) {}
 
@@ -328,7 +330,6 @@ void GetCurrDirCommand::execute() {
     getcwd(buff, DIR_MAX_LEN); //errors?
     cout << buff << endl;
 }
-
 
 
 ChangeDirCommand::ChangeDirCommand(const char* cmd_line, char** plastPwd): BuiltInCommand(cmd_line){
@@ -364,6 +365,3 @@ void ChangeDirCommand::execute() {
         SmallShell::getInstance().setMPLastPwd(curr_pwd);
     }
 }
-
-
-
