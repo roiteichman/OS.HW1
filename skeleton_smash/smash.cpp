@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
 
     std::cout << "hi-1";
 
-    Job tmp_1(1, 657, BACKGROUND, "cd C:\\Users\\teich");
+    Job* tmp_1 = new Job(1, 657, BACKGROUND, "cd C:\\Users\\teich");
     Job tmp_2(2, 658, FOREGROUND, "cd C:\\Users");
     Job tmp_3(3, 659, STOPPED, "ls");
     Job tmp_4(4, 660, BACKGROUND, "pwd");
@@ -30,13 +30,14 @@ int main(int argc, char* argv[]) {
 
     std::cout << "hi1";
 
-    jobs_list.addNewJob(&tmp_1);
+    jobs_list.addNewJob(tmp_1);
+    std::cout << "hi2";
+
 /*
     jobs_list.addNewJob(&tmp_2);
     jobs_list.addNewJob(&tmp_3);
     jobs_list.addNewJob(&tmp_4);
 
-    std::cout << "hi2";
 
     jobs_list.printJobsList();
 
