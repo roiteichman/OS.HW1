@@ -252,8 +252,9 @@ BuiltInCommand::BuiltInCommand(const char *cmd_line): Command(cmd_line) {}
 
 ExternalCommand::ExternalCommand(const char *cmd_line): Command(cmd_line){}
 
-#ifndef RUN_LOCAL
+
 void ExternalCommand::execute() {
+#ifndef RUN_LOCAL
     pid_t pid = fork();
     if (pid==0){
         // child
@@ -286,8 +287,8 @@ void ExternalCommand::execute() {
     else{
 
     }
-}
 #endif
+}
 
 char *const *BuiltInCommand::getMCmdLine() const {
     return m_cmd_line;
