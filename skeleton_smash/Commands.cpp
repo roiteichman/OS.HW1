@@ -427,7 +427,7 @@ void JobsList::removeFinishedJobs() {
 }
 
 void JobsList::printJobsList() {
-    this->removeFinishedJobs();
+    //this->removeFinishedJobs();
     for (Job* job: m_list) {
         cout << job << endl;
     }
