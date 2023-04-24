@@ -414,8 +414,8 @@ JobsList::~JobsList() {
 int JobsList::addNewJob(Job* job){
     //this->removeFinishedJobs();
     int new_index = 1;
-    if (*m_list.end() != nullptr){
-        new_index = (*m_list.end())->m_job_id+1;
+    if (m_list.size() > 0){
+        new_index = (*(--m_list.end()))->m_job_id+1;
     }
     job->m_job_id=new_index;
     m_list.push_back(job);
@@ -435,9 +435,9 @@ void JobsList::removeFinishedJobs() {
 }
 
 void JobsList::printJobsList() {
-    //this->removeFinishedJobs();
+    this->removeFinishedJobs();
     for (Job* job: m_list) {
-        cout << job << endl;
+        cout << *job << endl;
     }
 }
 

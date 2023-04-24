@@ -20,7 +20,6 @@ int main(int argc, char* argv[]) {
 */
     //TODO: setup sig alarm handler
 
-
     Job* tmp_1 = new Job(1, 657, BACKGROUND, "cd C:\\Users\\teich");
     Job* tmp_2 = new Job(2, 658, FOREGROUND, "cd C:\\Users");
     Job* tmp_3 = new Job(3, 659, STOPPED, "ls");
@@ -35,10 +34,7 @@ int main(int argc, char* argv[]) {
     jobs_list.addNewJob(tmp_3);
     jobs_list.addNewJob(tmp_4);
 
-    std::cout << tmp_1 << std::endl;
-
-    //jobs_list.printJobsList();
-
+    jobs_list.printJobsList();
 
 
 
