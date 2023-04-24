@@ -24,12 +24,19 @@ int main(int argc, char* argv[]) {
     Job tmp_4(4, 660, BACKGROUND, "pwd");
 
     JobsList jobs_list;
+
+    std::cout << "hi1";
+
     jobs_list.addNewJob(&tmp_1);
     jobs_list.addNewJob(&tmp_2);
     jobs_list.addNewJob(&tmp_3);
     jobs_list.addNewJob(&tmp_4);
 
+    std::cout << "hi2";
+
     jobs_list.printJobsList();
+
+
 
 
    // for (int i = 0; i < 900000000; ++i) {}
@@ -50,24 +57,6 @@ int main(int argc, char* argv[]) {
         smash.executeCommand(cmd_line.c_str());
     }
 
-
-
-
-
-
-    const char* cmd_line = "cd C:\\Users\\teich\\";
-    char* last_path = "C:\\Users";
-
-    ChangeDirCommand change(cmd_line, &last_path);
-    change.execute();
-    for (int i = 0; (last_path[i]) ; ++i) {
-        std::cout << last_path[i];
-    }
-*/
-
-/*    const char* cmd_line = "print.exe you are very good!";
-    ExternalCommand w(cmd_line)
-    w.execute();
 */
 
     return 0;
