@@ -401,12 +401,12 @@ std::ostream& operator<<(ostream& os, const Job& job) {
 
 JobsList::~JobsList() {
     for (Job* job: m_list) {
-        //delete job;
+        delete job;
     }
 }
 
 int JobsList::addNewJob(Job* job){
-    this->removeFinishedJobs();
+    //this->removeFinishedJobs();
     int new_index = (*m_list.end())->m_job_id+1;
     job->m_job_id=new_index;
     m_list.push_back(job);
