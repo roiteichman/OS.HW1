@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
     }
 */
     //TODO: setup sig alarm handler
-
+/*
     std::cout << "hi-1";
 
     Job tmp_1(1, 657, BACKGROUND, "cd C:\\Users\\teich");
@@ -41,10 +41,11 @@ int main(int argc, char* argv[]) {
     jobs_list.printJobsList();
 
 
+*/
+    Job tmp_1(1, 657, BACKGROUND, "cd C:\\Users\\teich");
 
-
-   // for (int i = 0; i < 900000000; ++i) {}
-   // std::cout << tmp_1 << std::endl;
+    for (int i = 0; i < 900000000; ++i) {}
+    std::cout << tmp_1 << std::endl;
 
 
 
