@@ -406,8 +406,11 @@ JobsList::~JobsList() {
 }
 
 int JobsList::addNewJob(Job* job){
-    //this->removeFinishedJobs();
-    int new_index = (*m_list.end())->m_job_id+1;
+    this->removeFinishedJobs();
+    int new_index = 1;
+    if (*m_list.end() != nullptr){
+        new_index = (*m_list.end())->m_job_id+1;
+    }
     job->m_job_id=new_index;
     m_list.push_back(job);
     return new_index;
