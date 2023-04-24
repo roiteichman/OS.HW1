@@ -17,7 +17,10 @@ int main(int argc, char* argv[]) {
     }
 */
     //TODO: setup sig alarm handler
+    Job tmp_jpb(3, 657, BACKGROUND, "cd C:\\Users\\teich");
+//    Job(int job_id, int pid, STATE state, char* cmd_line);
 
+/*
     SmallShell& smash = SmallShell::getInstance();
 
 
@@ -28,7 +31,6 @@ int main(int argc, char* argv[]) {
         smash.executeCommand(cmd_line.c_str());
     }
 
-/*
     const char* cmd_line = "cd C:\\Users\\teich\\";
     char* last_path = "C:\\Users";
 

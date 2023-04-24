@@ -108,14 +108,14 @@ struct Job{
     int m_job_id;
     int m_pid;
     STATE m_state;
-    bool m_is_stopped;
-    char m_cmd_line[COMMAND_MAX_CHARACTERS+1];
+    char m_full_cmd_line[COMMAND_MAX_CHARACTERS + 1];
     time_t m_insert_time;
 
-    Job(int job_id, int pid, STATE state, bool is_stopped, char* cmd_line);
+    Job(int job_id, int pid, STATE state, char* cmd_line);
     ~Job() = default;
     Job(Job const&) = delete;
     void operator=(Job const&) = delete;
+    friend std::ostream& operator<<(std::ostream& os, const Job& job);
 };
 
 

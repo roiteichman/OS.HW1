@@ -266,7 +266,7 @@ void ExternalCommand::execute() {
         }
     }
     else if (pid>0){
-        Job* new_job = new Job(-1, pid, FOREGROUND, false, this->m_full_cmd_line);
+        Job* new_job = new Job(-1, pid, FOREGROUND, this->m_full_cmd_line);
         // foreground
         if (!m_is_back_ground){
             wait(NULL);
@@ -383,9 +383,18 @@ void ChangeDirCommand::execute() {
     }
 }
 
-Job::Job(int job_id, int pid, STATE state, bool is_stopped, char* cmd_line): m_job_id(job_id), m_pid(pid),
-m_state(state), m_insert_time(time(NULL)), m_is_stopped(is_stopped) {
-    strcpy(m_cmd_line, cmd_line);
+Job::Job(int job_id, int pid, STATE state, char* cmd_line): m_job_id(job_id), m_pid(pid),
+m_state(state), m_insert_time(time(NULL)) {
+    strcpy(m_full_cmd_line, cmd_line);
+}
+
+std::ostream& operator<<(ostream& os, const Job& job) {
+    os << "[" << job.m_job_id << "]" << job.m_full_cmd_line << " : " << job.m_pid;
+    os << " " << (difftime(time(NULL), job.m_insert_time)) << " secs";
+    if (job.m_state == STOPPED){
+        os << " (stopped)";
+    }
+    return os;
 }
 
 JobsList::~JobsList() {
@@ -408,5 +417,11 @@ void JobsList::removeFinishedJobs() {
             delete job;
             m_list.remove(job);
         }
+    }
+}
+
+void JobsList::printJobsList() {
+    for (Job* job: m_list) {
+
     }
 }
