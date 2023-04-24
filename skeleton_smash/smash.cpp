@@ -24,13 +24,13 @@ int main(int argc, char* argv[]) {
     Job tmp_4(4, 660, BACKGROUND, "pwd");
 
     JobsList jobs_list;
-    jobs_list.addNewJob()
+    //jobs_list.addNewJob()
 
 
 
 
     for (int i = 0; i < 900000000; ++i) {}
-    std::cout << tmp_jpb << std::endl;
+    std::cout << tmp_1 << std::endl;
 //    Job(int job_id, int pid, STATE state, char* cmd_line);
 
 /*
