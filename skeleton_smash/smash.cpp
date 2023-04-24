@@ -19,7 +19,7 @@ int main(int argc, char* argv[]) {
     //TODO: setup sig alarm handler
 
     Job tmp_jpb(3, 657, BACKGROUND, "cd C:\\Users\\teich");
-    for (int i = 0; i < 100000000; ++i) {}
+    for (int i = 0; i < 900000000; ++i) {}
     std::cout << tmp_jpb << std::endl;
 //    Job(int job_id, int pid, STATE state, char* cmd_line);
 
