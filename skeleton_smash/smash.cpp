@@ -24,8 +24,8 @@ int main(int argc, char* argv[]) {
     Job tmp_2(2, 658, FOREGROUND, "cd C:\\Users");
     Job tmp_3(3, 659, STOPPED, "ls");
     Job tmp_4(4, 660, BACKGROUND, "pwd");
-/*
     std::cout << "hi0";
+/*
 
     JobsList jobs_list;
 
