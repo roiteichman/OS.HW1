@@ -1,8 +1,10 @@
 #include <iostream>
 #include <unistd.h>
-#include <sys/wait.h>
 #include <signal.h>
 #include "Commands.h"
+#ifndef RUN_LOCAL
+#include <sys/wait.h>
+#endif
 #include "signals.h"
 
 int main(int argc, char* argv[]) {
@@ -33,7 +35,9 @@ int main(int argc, char* argv[]) {
     jobs_list.addNewJob(tmp_3);
     jobs_list.addNewJob(tmp_4);
 
-    jobs_list.printJobsList();
+    std::cout << tmp_1 << std::endl;
+
+    //jobs_list.printJobsList();
 
 
 

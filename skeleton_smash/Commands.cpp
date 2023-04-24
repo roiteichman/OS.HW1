@@ -6,9 +6,11 @@
 #include <iostream>
 #include <vector>
 #include <sstream>
-#include <sys/wait.h>
 #include <iomanip>
 #include "Commands.h"
+#ifndef RUN_LOCAL
+#include <sys/wait.h>
+#endif
 #include <unistd.h>
 #include <time.h>
 
@@ -250,6 +252,7 @@ BuiltInCommand::BuiltInCommand(const char *cmd_line): Command(cmd_line) {}
 
 ExternalCommand::ExternalCommand(const char *cmd_line): Command(cmd_line){}
 
+#ifndef RUN_LOCAL
 void ExternalCommand::execute() {
     pid_t pid = fork();
     if (pid==0){
@@ -284,6 +287,8 @@ void ExternalCommand::execute() {
 
     }
 }
+#endif
+
 char *const *BuiltInCommand::getMCmdLine() const {
     return m_cmd_line;
 }
@@ -417,6 +422,7 @@ int JobsList::addNewJob(Job* job){
 }
 
 void JobsList::removeFinishedJobs() {
+#ifndef RUN_LOCAL
     for (Job* job: m_list) {
         pid_t res = waitpid(job->m_pid, NULL, WNOHANG);
         if (res){
@@ -424,6 +430,7 @@ void JobsList::removeFinishedJobs() {
             m_list.remove(job);
         }
     }
+#endif
 }
 
 void JobsList::printJobsList() {
