@@ -383,7 +383,7 @@ void ChangeDirCommand::execute() {
     }
 }
 
-Job::Job(int job_id, int pid, STATE state, char* cmd_line): m_job_id(job_id), m_pid(pid),
+Job::Job(int job_id, int pid, STATE state, const char* cmd_line): m_job_id(job_id), m_pid(pid),
 m_state(state), m_insert_time(time(NULL)) {
     strcpy(m_full_cmd_line, cmd_line);
 }

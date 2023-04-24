@@ -111,7 +111,7 @@ struct Job{
     char m_full_cmd_line[COMMAND_MAX_CHARACTERS + 1];
     time_t m_insert_time;
 
-    Job(int job_id, int pid, STATE state, char* cmd_line);
+    Job(int job_id, int pid, STATE state, const char* cmd_line);
     ~Job() = default;
     Job(Job const&) = delete;
     void operator=(Job const&) = delete;
