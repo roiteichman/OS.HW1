@@ -32,8 +32,8 @@ int main(int argc, char* argv[]) {
     /*jobs_list.addNewJob(tmp_2);
     jobs_list.addNewJob(tmp_3);
     jobs_list.addNewJob(tmp_4);
-*/
     jobs_list.printJobsList();
+*/
 /*
 
 
