@@ -42,15 +42,11 @@ int main(int argc, char* argv[]) {
 
 
     while(true) {
-        int counter=0;
         smash.printPrompt();
         std::string cmd_line;
         std::getline(std::cin, cmd_line);
         smash.executeCommand(cmd_line.c_str());
-        counter++;
-        if (counter==3){
-            smash.getMJobList().printJobsList();
-        }
+        smash.getMJobList().printJobsList();
     }
 
 
