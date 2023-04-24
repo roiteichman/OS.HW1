@@ -401,7 +401,7 @@ std::ostream& operator<<(ostream& os, const Job& job) {
 
 JobsList::~JobsList() {
     for (Job* job: m_list) {
-        delete job;
+        //delete job;
     }
 }
 
