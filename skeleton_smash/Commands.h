@@ -143,8 +143,8 @@ public:
 class JobsCommand : public BuiltInCommand {
  // TODO: Add your data members
  public:
-  JobsCommand(const char* cmd_line, JobsList* jobs);
-  virtual ~JobsCommand() {}
+  JobsCommand(const char* cmd_line);
+  virtual ~JobsCommand() = default;
   void execute() override;
 };
 
@@ -233,7 +233,7 @@ class SmallShell {
     const char *getMPCurrPwd() const;
 
     void setMPLastPwd(char* lastPwd);
-  void setMPCurrPwd(char* currPwd);
+  void setMPCurrPwd();
 
     JobsList &getMJobList();
 

@@ -181,9 +181,9 @@ void SmallShell::executeCommand(const char *cmd_line) {
     // Please note that you must fork smash process for some commands (e.g., external commands....)
 
 
+    this->getMJobList().removeFinishedJobs();
     Command* cmd = CreateCommand(cmd_line);
     cmd->execute();
-
 /*
     BuiltInCommand* bi_cmd = dynamic_cast<BuiltInCommand*>(cmd);
     // if the command is Build-In Command, we get a pointer, else we get nullptr
@@ -207,8 +207,8 @@ void SmallShell::setMPLastPwd(char *lastPwd) {
     strcpy(m_p_lastPWD, lastPwd);
 }
 
-void SmallShell::setMPCurrPwd(char *currPwd) {
-    strcpy(m_p_currPWD, currPwd);
+void SmallShell::setMPCurrPwd() {
+    getcwd(m_p_currPWD, DIR_MAX_LEN);
 }
 
 const char *SmallShell::getMPLastPwd() const {
@@ -374,11 +374,13 @@ void ChangeDirCommand::execute() {
         strcpy(asked_path, old_pwd);
     }
 
+
+
     if (chdir(asked_path) != 0){
         perror("smash error: cd failed");
     }
     else{
-        SmallShell::getInstance().setMPCurrPwd(asked_path);
+        SmallShell::getInstance().setMPCurrPwd();
         SmallShell::getInstance().setMPLastPwd(curr_pwd);
     }
 }
@@ -389,7 +391,7 @@ m_state(state), m_insert_time(time(NULL)) {
 }
 
 std::ostream& operator<<(ostream& os, const Job& job) {
-    os << "[" << job.m_job_id << "]" << job.m_full_cmd_line << " : " << job.m_pid;
+    os << "[" << job.m_job_id << "] " << job.m_full_cmd_line << " : " << job.m_pid;
     os << " " << (difftime(time(NULL), job.m_insert_time)) << " secs";
     if (job.m_state == STOPPED){
         os << " (stopped)";
@@ -404,6 +406,7 @@ JobsList::~JobsList() {
 }
 
 int JobsList::addNewJob(Job* job){
+    this->removeFinishedJobs();
     int new_index = (*m_list.end())->m_job_id+1;
     job->m_job_id=new_index;
     m_list.push_back(job);
@@ -421,7 +424,15 @@ void JobsList::removeFinishedJobs() {
 }
 
 void JobsList::printJobsList() {
+    this->removeFinishedJobs();
     for (Job* job: m_list) {
-
+        cout << job << endl;
     }
 }
+
+JobsCommand::JobsCommand(const char *cmd_line): BuiltInCommand(cmd_line){}
+
+void JobsCommand::execute() {
+    SmallShell::getInstance().getMJobList().printJobsList();
+}
+
