@@ -18,28 +18,24 @@ int main(int argc, char* argv[]) {
 */
     //TODO: setup sig alarm handler
 
-    std::cout << "hi-1";
 
     Job* tmp_1 = new Job(1, 657, BACKGROUND, "cd C:\\Users\\teich");
-    Job tmp_2(2, 658, FOREGROUND, "cd C:\\Users");
-    Job tmp_3(3, 659, STOPPED, "ls");
-    Job tmp_4(4, 660, BACKGROUND, "pwd");
-    std::cout << "hi0";
+    Job* tmp_2 = new Job(2, 658, FOREGROUND, "cd C:\\Users");
+    Job* tmp_3 = new Job(3, 659, STOPPED, "ls");
+    Job* tmp_4 = new Job(4, 660, BACKGROUND, "pwd");
 
     JobsList jobs_list;
 
-    std::cout << "hi1";
 
     jobs_list.addNewJob(tmp_1);
-    std::cout << "hi2";
 
-/*
-    jobs_list.addNewJob(&tmp_2);
-    jobs_list.addNewJob(&tmp_3);
-    jobs_list.addNewJob(&tmp_4);
+    jobs_list.addNewJob(tmp_2);
+    jobs_list.addNewJob(tmp_3);
+    jobs_list.addNewJob(tmp_4);
 
 
     jobs_list.printJobsList();
+/*
 
 
 */
