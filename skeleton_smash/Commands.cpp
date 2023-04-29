@@ -442,16 +442,17 @@ void JobsList::printJobsList() {
 
 void JobsList::removeFinishedJobs() {
 #ifndef RUN_LOCAL
-    std::list<Job*> tmp_list;
-    for (Job* job: m_list) {
+    std::list<Job *> tmp_list;
+    for (Job *job: m_list) {
         pid_t res = waitpid(job->m_pid, NULL, WNOHANG);
-        if (res){
+        if (res) {
             tmp_list.push_back(job);
         }
     }
-    for (Job* job: tmp_list) {
+    for (Job *job: tmp_list) {
         delete job;
         m_list.remove(job);
+    }
 #endif
 }
 
