@@ -475,11 +475,11 @@ Job *JobsList::getLastJob() {
 
 QuitCommand::QuitCommand(const char* cmd_line): BuiltInCommand(cmd_line),
                                                 m_kill(false),
-                                                m_ignore(false){
+                                                m_another_args(false){
     char* other_arg;
     int is_kill = strcmp("kill", this->getMCmdLine()[1]);
     if (this->getMCmdLine()[ANOTHER_ARGS] != NULL){
-        m_ignore = true;
+        m_another_args = true;
     }
     if (is_kill == 0){
         m_kill = true;
@@ -488,16 +488,20 @@ QuitCommand::QuitCommand(const char* cmd_line): BuiltInCommand(cmd_line),
 
 
 void QuitCommand::execute() {
-    if (m_kill && !m_ignore){
+    if (m_kill && !m_another_args){
         Job* last_job = SmallShell::getInstance().getMJobList().getLastJob();
         /// TODO: what should we do if there is no jobs? still print?
+        int num;
         if (last_job != nullptr){
-            int num = last_job->m_job_id;
-            cout << "smash: sending SIGKILL signal to "<< num << " jobs:" << endl;
-            SmallShell::getInstance().getMJobList().printJobsList();
-            cout << "Linux-shell:" << endl;
-            SmallShell::getInstance().getMJobList().killAllJobs();
+            num = last_job->m_job_id;
         }
+        else{
+            num = 0;
+        }
+        cout << "smash: sending SIGKILL signal to "<< num << " jobs:" << endl;
+        SmallShell::getInstance().getMJobList().printJobsList();
+        cout << "Linux-shell:" << endl;
+        SmallShell::getInstance().getMJobList().killAllJobs();
     }
     exit(EXIT_SUCCESS);
     /// TODO: check if its could fail

@@ -8,7 +8,7 @@
 #define COMMAND_MAX_ARGS (20)
 #define COMMAND_MAX_CHARACTERS (80)
 
-//#define RUN_LOCAL
+#define RUN_LOCAL
 
 class Command {
     // TODO: Add your data members
@@ -99,7 +99,7 @@ class JobsList;
 class QuitCommand : public BuiltInCommand {
 // TODO: Add your data members
   bool m_kill;
-  bool m_ignore;
+  bool m_another_args;
 public:
   QuitCommand(const char* cmd_line);
   virtual ~QuitCommand() = default;
