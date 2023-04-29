@@ -170,6 +170,9 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     else if (firstWord.compare("jobs") == 0) {
         return new JobsCommand(cmd_line);
     }
+    else if (firstWord.compare("quit") == 0) {
+        return new QuitCommand(cmd_line);
+    }
 
 
 //  else if ...
@@ -229,7 +232,6 @@ const char* SmallShell::getMPCurrPwd() const {
 JobsList &SmallShell::getMJobList(){
     return m_job_list;
 }
-
 
 int Command::setCMDLine_R_BG_s(const char *cmd_line) {
     char cmd_line_non_const[COMMAND_MAX_CHARACTERS];
@@ -459,20 +461,43 @@ void JobsList::removeFinishedJobs() {
 }
 
 void JobsList::killAllJobs() {
+#ifndef RUN_LOCAL
+    this->removeFinishedJobs();
     for (Job *job: m_list) {
         kill(job->m_pid, SIGKILL);
     }
+#endif
 }
 
 Job *JobsList::getLastJob() {
     return *(--(this->m_list.end()));
 }
 
-QuitCommand::QuitCommand(const char* cmd_line): BuiltInCommand(cmd_line){}
+QuitCommand::QuitCommand(const char* cmd_line): BuiltInCommand(cmd_line),
+                                                m_kill(false),
+                                                m_ignore(false){
+    char* other_arg;
+    int is_kill = strcmp("kill", this->getMCmdLine()[1]);
+    if (this->getMCmdLine()[ANOTHER_ARGS] != NULL){
+        m_ignore = true;
+    }
+    if (is_kill == 0){
+        m_kill = true;
+    }
+}
+
 
 void QuitCommand::execute() {
-    if (SmallShell::getInstance().getMJobList().getLastJob() != nullptr){
-        SmallShell::getInstance().getMJobList().killAllJobs();
+    if (m_kill && !m_ignore){
+        Job* last_job = SmallShell::getInstance().getMJobList().getLastJob();
+        /// TODO: what should we do if there is no jobs? still print?
+        if (last_job != nullptr){
+            int num = last_job->m_job_id;
+            cout << "smash: sending SIGKILL signal to "<< num << "jobs:" << endl;
+            SmallShell::getInstance().getMJobList().printJobsList();
+            cout << "Linux-shell:" << endl;
+            SmallShell::getInstance().getMJobList().killAllJobs();
+        }
     }
     exit(EXIT_SUCCESS);
     /// TODO: check if its could fail

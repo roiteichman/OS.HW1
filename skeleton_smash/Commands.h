@@ -98,6 +98,8 @@ class ShowPidCommand : public BuiltInCommand {
 class JobsList;
 class QuitCommand : public BuiltInCommand {
 // TODO: Add your data members
+  bool m_kill;
+  bool m_ignore;
 public:
   QuitCommand(const char* cmd_line);
   virtual ~QuitCommand() = default;
