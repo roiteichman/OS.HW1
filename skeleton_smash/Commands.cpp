@@ -166,6 +166,10 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
         p_lastPwd[1]=lastPWD;
         return new ChangeDirCommand(cmd_line, p_lastPwd);
     }
+    else if (firstWord.compare("jobs") == 0) {
+        return new JobsCommand(cmd_line);
+    }
+
 
 //  else if ...
 //  .....
@@ -422,6 +426,20 @@ int JobsList::addNewJob(Job* job){
     return new_index;
 }
 
+JobsCommand::JobsCommand(const char* cmd_line): BuiltInCommand(cmd_line){}
+
+void JobsCommand::execute() {
+    SmallShell::getInstance().getMJobList().printJobsList();
+}
+
+
+void JobsList::printJobsList() {
+    this->removeFinishedJobs();
+    for (Job* job: m_list) {
+        cout << *job << endl;
+    }
+}
+
 void JobsList::removeFinishedJobs() {
 #ifndef RUN_LOCAL
     std::list<Job*> tmp_list;
@@ -435,18 +453,5 @@ void JobsList::removeFinishedJobs() {
         delete job;
         m_list.remove(job);
 #endif
-}
-
-void JobsList::printJobsList() {
-    this->removeFinishedJobs();
-    for (Job* job: m_list) {
-        cout << *job << endl;
-    }
-}
-
-JobsCommand::JobsCommand(const char *cmd_line): BuiltInCommand(cmd_line){}
-
-void JobsCommand::execute() {
-    SmallShell::getInstance().getMJobList().printJobsList();
 }
 
