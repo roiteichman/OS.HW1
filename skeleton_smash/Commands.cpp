@@ -488,7 +488,8 @@ QuitCommand::QuitCommand(const char* cmd_line): BuiltInCommand(cmd_line),
 
 
 void QuitCommand::execute() {
-    if (m_kill && !m_another_args){
+    /// TODO: another args should ignored means if exist so still do the func or no?
+    if (m_kill){
         Job* last_job = SmallShell::getInstance().getMJobList().getLastJob();
         /// TODO: what should we do if there is no jobs? still print?
         int num;
