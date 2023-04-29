@@ -493,7 +493,7 @@ void QuitCommand::execute() {
         /// TODO: what should we do if there is no jobs? still print?
         if (last_job != nullptr){
             int num = last_job->m_job_id;
-            cout << "smash: sending SIGKILL signal to "<< num << "jobs:" << endl;
+            cout << "smash: sending SIGKILL signal to "<< num << " jobs:" << endl;
             SmallShell::getInstance().getMJobList().printJobsList();
             cout << "Linux-shell:" << endl;
             SmallShell::getInstance().getMJobList().killAllJobs();
