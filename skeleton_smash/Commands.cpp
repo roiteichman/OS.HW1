@@ -424,13 +424,16 @@ int JobsList::addNewJob(Job* job){
 
 void JobsList::removeFinishedJobs() {
 #ifndef RUN_LOCAL
+    std::list<Job*> tmp_list;
     for (Job* job: m_list) {
         pid_t res = waitpid(job->m_pid, NULL, WNOHANG);
         if (res){
-            delete job;
-            m_list.remove(job);
+            tmp_list.push_back(job);
         }
     }
+    for (Job* job: tmp_list) {
+        delete job;
+        m_list.remove(job);
 #endif
 }
 
