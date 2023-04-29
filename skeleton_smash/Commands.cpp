@@ -262,6 +262,7 @@ void ExternalCommand::execute() {
     pid_t pid = fork();
     if (pid==0){
         // child
+        setpgrp();
         if (m_is_complex) {
             char cmd_for_bash[COMMAND_MAX_CHARACTERS];
             cmdForBash (m_cmd_line, cmd_for_bash);
