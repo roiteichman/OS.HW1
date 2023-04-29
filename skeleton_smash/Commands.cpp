@@ -33,6 +33,7 @@ const std::string WHITESPACE = " \n\r\t\f\v";
 #define JUST_PROMPT 1
 #define ANOTHER_ARGS 2
 #define DIR_MAX_LEN 200
+#define SIGKILL 9
 
 
 string _ltrim(const std::string& s)
@@ -457,3 +458,22 @@ void JobsList::removeFinishedJobs() {
 #endif
 }
 
+void JobsList::killAllJobs() {
+    for (Job *job: m_list) {
+        kill(job->m_pid, SIGKILL);
+    }
+}
+
+Job *JobsList::getLastJob() {
+    return *(--(this->m_list.end()));
+}
+
+QuitCommand::QuitCommand(const char* cmd_line): BuiltInCommand(cmd_line){}
+
+void QuitCommand::execute() {
+    if (SmallShell::getInstance().getMJobList().getLastJob() != nullptr){
+        SmallShell::getInstance().getMJobList().killAllJobs();
+    }
+    exit(EXIT_SUCCESS);
+    /// TODO: check if its could fail
+}
