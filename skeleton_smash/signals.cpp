@@ -30,7 +30,7 @@ void ctrlCHandler(int sig_num) {
     }
     SmallShell::getInstance().setFgJob(NULL);
     cout << "smash: process " << fg_job_ptr->m_pid << " was stopped" << endl;
-    delete fg_job_ptr;
+    //delete fg_job_ptr;
 }
 
 void alarmHandler(int sig_num) {
