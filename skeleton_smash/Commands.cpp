@@ -555,13 +555,11 @@ void JobsList::killAllJobs() {
 #endif
 }
 
-Job *JobsList::getLastJob() {
-    return *(--(this->m_list.end()));
-}
-
 Job* JobsList::getLastJob() {
-    if (m_list.size() == 0) return NULL;
-    else return *(--m_list.end());
+    if (m_list.size() == 0){
+        return NULL;
+    }
+    return *(--m_list.end());
 }
 
 int JobsList::getSize() const{
