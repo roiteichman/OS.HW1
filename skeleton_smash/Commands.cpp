@@ -303,12 +303,14 @@ void ExternalCommand::execute() {
             int result = execl("/bin/bash", "bash", "-c", cmd_for_bash, NULL);
             if (result == -1){
                 perror("smash error: execl failed");
+                exit(EXIT_FAILURE);
             }
         }
         else {
             int res = execvp(m_cmd_line[0], m_cmd_line);
             if (res == -1){
                 perror("smash error: execvp failed");
+                exit(EXIT_FAILURE);
             }
         }
     }
