@@ -229,7 +229,7 @@ class SmallShell {
   }
   ~SmallShell();
   void changePrompt (const char* prompt);
-  void printPrompt() const {std::cout << m_prompt << ">";}
+  void printPrompt() const {std::cout << m_prompt << "> ";}
   void executeCommand(const char* cmd_line);
 
     const char *getMPLastPwd() const;

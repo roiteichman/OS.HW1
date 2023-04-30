@@ -517,7 +517,6 @@ void QuitCommand::execute() {
         }
         cout << "smash: sending SIGKILL signal to "<< num << " jobs:" << endl;
         SmallShell::getInstance().getMJobList().printJobsList();
-        cout << "Linux-shell:" << endl;
         SmallShell::getInstance().getMJobList().killAllJobs();
     }
     exit(EXIT_SUCCESS);
