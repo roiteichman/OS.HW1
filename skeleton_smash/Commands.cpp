@@ -155,43 +155,38 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     string cmd_s = _trim(string(cmd_line));
     string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
 
-    if (firstWord.compare("chprompt") == 0) {
+    if (firstWord.compare("chprompt") == 0 || firstWord.compare("chprompt&") == 0) {
         return new ChangePrompt(cmd_line);
     }
 
     else if (firstWord.compare("pwd") == 0 || firstWord.compare("pwd&") == 0) {
         return new GetCurrDirCommand(cmd_line);
     }
-    else if (firstWord.compare("showpid") == 0) {
+    else if (firstWord.compare("showpid") == 0 || firstWord.compare("showpid&") == 0) {
         return new ShowPidCommand(cmd_line);
     }
-    else if (firstWord.compare("cd") == 0) {
+    else if (firstWord.compare("cd") == 0 || firstWord.compare("cd&") == 0) {
         char lastPWD[COMMAND_ARGS_MAX_LENGTH]={0};
         strcpy(lastPWD, SmallShell::getInstance().getMPLastPwd());
         char * p_lastPwd[COMMAND_ARGS_MAX_LENGTH];
         p_lastPwd[1]=lastPWD;
         return new ChangeDirCommand(cmd_line, p_lastPwd);
     }
-    else if (firstWord.compare("jobs") == 0) {
+    else if (firstWord.compare("jobs") == 0 || firstWord.compare("jobs&") == 0) {
         return new JobsCommand(cmd_line);
     }
-    else if (firstWord.compare("quit") == 0) {
+    else if (firstWord.compare("quit") == 0 || firstWord.compare("quit&") == 0) {
         return new QuitCommand(cmd_line);
     }
-    else if (firstWord.compare("kill") == 0) {
+    else if (firstWord.compare("kill") == 0 || firstWord.compare("kill&") == 0) {
         return new KillCommand(cmd_line);
     }
-    else if (firstWord.compare("fg") == 0) {
+    else if (firstWord.compare("fg") == 0 || firstWord.compare("fg&") == 0) {
         return new ForegroundCommand(cmd_line);
     }
-    else if (firstWord.compare("bg") == 0) {
+    else if (firstWord.compare("bg") == 0 || firstWord.compare("bg&") == 0) {
         return new BackgroundCommand(cmd_line);
     }
-
-
-
-//  else if ...
-//  .....
     else {
         return new ExternalCommand(cmd_line);
     }
@@ -305,12 +300,16 @@ void ExternalCommand::execute() {
         if (m_is_complex) {
             char cmd_for_bash[COMMAND_MAX_CHARACTERS];
             cmdForBash (m_cmd_line, cmd_for_bash);
-            execl("/bin/bash", "bash", "-c", cmd_for_bash, NULL);
-            /// TODO: errors
+            int result = execl("/bin/bash", "bash", "-c", cmd_for_bash, NULL);
+            if (result == -1){
+                perror("smash error: execl failed");
+            }
         }
         else {
-            execvp(m_cmd_line[0], m_cmd_line);
-            /// TODO: errors
+            int res = execvp(m_cmd_line[0], m_cmd_line);
+            if (res == -1){
+                perror("smash error: execvp failed");
+            }
         }
     }
     else if (pid>0){
@@ -325,7 +324,6 @@ void ExternalCommand::execute() {
 	        if (new_job->m_state != STOPPED) {
 		        delete new_job; // TODO if the job only stopped
 		        SmallShell::getInstance().setFgJob(NULL);
-                cout << "hi";
 	        }
 
         }
