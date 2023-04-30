@@ -21,7 +21,16 @@ void ctrlZHandler(int sig_num) {
 }
 
 void ctrlCHandler(int sig_num) {
-    // TODO: Add your implementation
+    cout << "smash: got ctrl-C" << endl;
+    Job* fg_job_ptr = SmallShell::getInstance().getFgJob();
+    if (fg_job_ptr == NULL) return;
+    int res = kill (fg_job_ptr->m_pid, SIGKILL);
+    if (res == -1){
+        perror("smash error: kill failed");
+    }
+    SmallShell::getInstance().setFgJob(NULL);
+    cout << "smash: process " << fg_job_ptr->m_pid << " was stopped" << endl;
+    delete fg_job_ptr;
 }
 
 void alarmHandler(int sig_num) {
