@@ -159,7 +159,7 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
         return new ChangePrompt(cmd_line);
     }
 
-    else if (firstWord.compare("pwd") == 0) {
+    else if (firstWord.compare("pwd") == 0 || firstWord.compare("pwd&") == 0) {
         return new GetCurrDirCommand(cmd_line);
     }
     else if (firstWord.compare("showpid") == 0) {
@@ -416,20 +416,21 @@ ChangeDirCommand::ChangeDirCommand(const char* cmd_line, char** plastPwd): Built
 }
 
 void ChangeDirCommand::execute() {
-    //TODO cd twice to same dir, and then cd -
-    char asked_path[COMMAND_ARGS_MAX_LENGTH];
-    char curr_pwd[COMMAND_ARGS_MAX_LENGTH];
-    char old_pwd[COMMAND_ARGS_MAX_LENGTH];
-    strcpy(asked_path, getMCmdLine()[1]);
-    strcpy(curr_pwd, SmallShell::getInstance().getMPCurrPwd());
-    strcpy(old_pwd, SmallShell::getInstance().getMPLastPwd());
+        //TODO cd twice to same dir, and then cd -
 
-    char *another_args = BuiltInCommand::getMCmdLine()[ANOTHER_ARGS];
-    if (another_args) {
-        perror("smash error: cd: too many arguments");
-    }
+        char asked_path[COMMAND_ARGS_MAX_LENGTH];
+        char curr_pwd[COMMAND_ARGS_MAX_LENGTH];
+        char old_pwd[COMMAND_ARGS_MAX_LENGTH];
+        strcpy(asked_path, getMCmdLine()[1]);
+        strcpy(curr_pwd, SmallShell::getInstance().getMPCurrPwd());
+        strcpy(old_pwd, SmallShell::getInstance().getMPLastPwd());
 
-    else if (strcmp(asked_path, "-") == 0){
+        char *another_args = BuiltInCommand::getMCmdLine()[ANOTHER_ARGS];
+        if (another_args) {
+            perror("smash error: cd: too many arguments");
+        }
+
+        else if (strcmp(asked_path, "-") == 0){
         if (strcmp(old_pwd, curr_pwd) == 0){
             perror("smash error: cd: OLDPWD not set");
         }
@@ -627,6 +628,8 @@ bool _isNum (char* c) {
 KillCommand::KillCommand(const char *cmd_line): BuiltInCommand(cmd_line) {}
 
 void KillCommand::execute() {
+
+    // TODO: is needed to change state of job according to the signal
 
     int signal_id;
     int job_id;
