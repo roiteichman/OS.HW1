@@ -133,7 +133,9 @@ SmallShell::SmallShell() :
 }
 
 SmallShell::~SmallShell() {
-// TODO: add your implementation
+    if(m_fg_job!=NULL){
+        delete m_fg_job;
+    }
 }
 
 
@@ -317,11 +319,14 @@ void ExternalCommand::execute() {
         if (!m_is_back_ground){
             SmallShell::getInstance().setFgJob(new_job);
             int res = waitpid(new_job->m_pid ,NULL, WUNTRACED);
-	        if (res == -1) perror("smash error: wait failed");
+	        if (res == -1){
+                perror("smash error: wait failed");
+            }
 	        if (new_job->m_state != STOPPED) {
-		    delete new_job; // TODO if the job only stopped
-		    SmallShell::getInstance().setFgJob(NULL);
-	    }
+		        delete new_job; // TODO if the job only stopped
+		        SmallShell::getInstance().setFgJob(NULL);
+                cout << "hi";
+	        }
 
         }
         // background
@@ -594,12 +599,25 @@ void QuitCommand::execute() {
         /// TODO: what should we do if there is no jobs? still print?
         cout << "smash: sending SIGKILL signal to "<< SmallShell::getInstance().getMJobList().getSize() << " jobs:" << endl;
 
-        ///TODO: change the print format
+        ///TODO: change the print format + add fg job to kill and print (amount+1(if fg exist))
         SmallShell::getInstance().getMJobList().printJobsList();
         SmallShell::getInstance().getMJobList().killAllJobs();
     }
     exit(EXIT_SUCCESS);
     /// TODO: check if its could fail
+}
+
+bool _isNum (char* c) {
+    if  (*c =='\0'){
+        return false;
+    }
+    for (char* p = c; *p != '\0'; p++) {
+        if (*p < '0' || *p > '9'){
+            return false;
+        }
+    }
+    return true;
+    //TODO: check negative num?
 }
 
 /*
@@ -612,56 +630,47 @@ void KillCommand::execute() {
 
     int signal_id;
     int job_id;
-    char* c_signal_id;
-    char* c_job_id;
+    Job* job_ptr = NULL;
 
     // check if there are too many args
     if (this->getMCmdLine()[ANOTHER_ARGS+1] != NULL){
-        perror("smash error: kill: invalid arguments");
+        cerr <<"smash error: kill: invalid arguments" << endl;
+        return;
     }
 
     // check if there is job_id, too few args
-    if (this->getMCmdLine()[ANOTHER_ARGS] == NULL){
-        perror("smash error: kill: invalid arguments");
-    }
-    else{
-        //get the job_id in int
-        for (int i = 0; this->getMCmdLine()[ANOTHER_ARGS][i]!='\0'; ++i) {
-            c_job_id[i]=this->getMCmdLine()[ANOTHER_ARGS][i];
-        }
-        sscanf(c_job_id, "%d", &job_id);
+    if (this->getMCmdLine()[ANOTHER_ARGS] == NULL || this->getMCmdLine()[1] == NULL){
+        cerr <<"smash error: kill: invalid arguments"<< endl;
+        return;
     }
 
-    // get the signal num in int
-    if (this->getMCmdLine()[ANOTHER_ARGS-1] != NULL) {
-        for (int i = 1; this->getMCmdLine()[ANOTHER_ARGS-1][i]!='\0'; ++i) {
-            c_signal_id[i]=this->getMCmdLine()[ANOTHER_ARGS - 1][i];
-        }
-        sscanf(c_signal_id, "%d", &signal_id);
-    }
 
-    // get the specific job
-    Job* job = SmallShell::getInstance().getMJobList().getJobById(job_id);
-    if (job != nullptr){
-        #ifndef RUN_LOCAL
-        kill(job->m_pid, signal_id);
-        #endif
-    }
-    else{
-        cerr << "smash error: kill: job-id " << c_job_id << " does not exist" << endl;
-    }
+    //get the job_id in int
 
+    if (m_cmd_line[1][0]!='-' || !_isNum (m_cmd_line[1]+1) || !_isNum (m_cmd_line[ANOTHER_ARGS])) {
+        cerr << "smash error: fg: invalid arguments" << endl;
+        return;
+    }
+    job_id = stoi(string(m_cmd_line[ANOTHER_ARGS]));
+    job_ptr = SmallShell::getInstance().getMJobList().getJobById(job_id);
+    if (job_ptr == NULL) {
+        cerr << "smash error: kill: job-id " << job_id << " does not exist" << endl;
+        return;
+    }
+    signal_id = stoi(string(m_cmd_line[1]+1));
+
+
+    #ifndef RUN_LOCAL
+    int res = kill(job_ptr->m_pid, signal_id);
+    if (res==-1){
+        perror("smash error: kill failed");
+    }
+    //TODO - what happend if signal id is out of range
+    #endif
 }
 
 ForegroundCommand::ForegroundCommand(const char *cmd_line): BuiltInCommand(cmd_line) {}
 
-
-bool _isNum (char* c) {
-    for (char* p = c; *p != '\0'; p++) {
-        if (*p < '0' || *p > '9') return false;
-    }
-    return true;
-}
 
 
 void ForegroundCommand::execute() {
