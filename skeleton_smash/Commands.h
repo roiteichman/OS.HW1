@@ -20,7 +20,7 @@ protected:
     char m_full_cmd_line[COMMAND_MAX_CHARACTERS+1];
 public:
   Command(const char* cmd_line);
-  virtual ~Command() = default; // TODO: delete m_cmd_line
+  virtual ~Command(); // TODO: delete m_cmd_line
   virtual void execute() = 0;
   int setCMDLine_R_BG_s(const char* cmd_line);
   //virtual void prepare();

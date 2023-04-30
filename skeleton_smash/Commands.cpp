@@ -204,7 +204,7 @@ void SmallShell::executeCommand(const char *cmd_line) {
     this->getMJobList().removeFinishedJobs();
     Command* cmd = CreateCommand(cmd_line);
     cmd->execute();
-    //TODO delete cmd;
+    delete cmd;
 
 /*
     BuiltInCommand* bi_cmd = dynamic_cast<BuiltInCommand*>(cmd);
@@ -282,6 +282,12 @@ Command::Command(const char *cmd_line): m_is_back_ground(_isBackgroundComamnd(cm
                                         m_desc_len_in_words(setCMDLine_R_BG_s(cmd_line))
 {
     strcpy(m_full_cmd_line, cmd_line);
+}
+
+Command::~Command() noexcept {
+    for (int i = 0; m_cmd_line[i]!=NULL ; ++i) {
+        free(m_cmd_line[i]);
+    }
 }
 
 BuiltInCommand::BuiltInCommand(const char *cmd_line): Command(cmd_line) {}
