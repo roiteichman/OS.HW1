@@ -122,8 +122,8 @@ SmallShell methods:
 --------------------*/
 
 SmallShell::SmallShell() :
-        m_prompt("smash"),
-        m_fg_job(NULL) {
+    m_fg_job(NULL) {
+    strcpy(m_prompt, "smash");
     char buff[COMMAND_ARGS_MAX_LENGTH] = {0};
     char* res = getcwd(buff, COMMAND_ARGS_MAX_LENGTH);
     if (res == NULL) perror ("smash error: getcwd failed");
