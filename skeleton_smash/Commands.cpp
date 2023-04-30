@@ -484,6 +484,7 @@ int JobsList::addNewJob(Job* job){
         new_index = (*(--m_list.end()))->m_job_id+1;
     }
     job->m_job_id=new_index;
+    job->m_insert_time=time(NULL);
     m_list.push_back(job);
     return new_index;
 }
