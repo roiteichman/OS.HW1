@@ -8,7 +8,7 @@
 #define COMMAND_MAX_ARGS (20)
 #define COMMAND_MAX_CHARACTERS (80)
 
-//#define RUN_LOCAL
+#define RUN_LOCAL
 
 class Command {
     // TODO: Add your data members
@@ -20,7 +20,7 @@ protected:
     char m_full_cmd_line[COMMAND_MAX_CHARACTERS+1];
 public:
   Command(const char* cmd_line);
-  virtual ~Command() = default;
+  virtual ~Command() = default; // TODO: delete m_cmd_line
   virtual void execute() = 0;
   int setCMDLine_R_BG_s(const char* cmd_line);
   //virtual void prepare();
@@ -99,7 +99,6 @@ class JobsList;
 class QuitCommand : public BuiltInCommand {
 // TODO: Add your data members
   bool m_kill;
-  bool m_another_args;
 public:
   QuitCommand(const char* cmd_line);
   virtual ~QuitCommand() = default;
@@ -120,6 +119,7 @@ struct Job{
     Job(Job const&) = delete;
     void operator=(Job const&) = delete;
     friend std::ostream& operator<<(std::ostream& os, const Job& job);
+    void print2() const;
 };
 
 
@@ -140,7 +140,8 @@ public:
   Job* getJobById(int jobId);
   void removeJobById(int jobId);
   Job* getLastJob();
-  JobEntry *getLastStoppedJob(int *jobId);
+  int getSize() const;
+  Job* getLastStoppedJob();
   // TODO: Add extra methods or modify exisitng ones as needed
 };
 
@@ -155,7 +156,7 @@ class JobsCommand : public BuiltInCommand {
 class ForegroundCommand : public BuiltInCommand {
  // TODO: Add your data members
  public:
-  ForegroundCommand(const char* cmd_line, JobsList* jobs);
+  ForegroundCommand(const char* cmd_line);
   virtual ~ForegroundCommand() {}
   void execute() override;
 };
@@ -163,7 +164,7 @@ class ForegroundCommand : public BuiltInCommand {
 class BackgroundCommand : public BuiltInCommand {
  // TODO: Add your data members
  public:
-  BackgroundCommand(const char* cmd_line, JobsList* jobs);
+  BackgroundCommand(const char* cmd_line);
   virtual ~BackgroundCommand() {}
   void execute() override;
 };
@@ -216,6 +217,7 @@ class SmallShell {
   char m_p_lastPWD[COMMAND_ARGS_MAX_LENGTH];
   char m_p_currPWD[COMMAND_ARGS_MAX_LENGTH];
   JobsList m_job_list;
+  Job* m_fg_job;
   SmallShell();
  public:
   Command *CreateCommand(const char* cmd_line);
@@ -239,7 +241,10 @@ class SmallShell {
     void setMPLastPwd(char* lastPwd);
   void setMPCurrPwd();
 
-    JobsList &getMJobList();
+    JobsList& getMJobList();
+    void setFgJob(Job* fg_job);
+    Job* getFgJob() const;
+
 
     // TODO: add extra methods as needed
 };

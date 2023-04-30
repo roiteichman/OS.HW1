@@ -13,6 +13,8 @@
 #endif
 #include <unistd.h>
 #include <time.h>
+#include <assert.h>
+
 
 using namespace std;
 
@@ -115,10 +117,16 @@ void cmdForBash (char** cmd_source, char* dest) {
 
 // TODO: Add your implementation for classes in Commands.h
 
+/*-------------------
+SmallShell methods:
+--------------------*/
+
 SmallShell::SmallShell() :
-        m_prompt("smash") {
+        m_prompt("smash"),
+        m_fg_job(NULL) {
     char buff[COMMAND_ARGS_MAX_LENGTH] = {0};
-    getcwd(buff, COMMAND_ARGS_MAX_LENGTH);
+    char* res = getcwd(buff, COMMAND_ARGS_MAX_LENGTH);
+    if (res == NULL) perror ("smash error: getcwd failed");
 
     strcpy(m_p_currPWD, buff);
     strcpy(m_p_lastPWD, buff);
@@ -128,11 +136,6 @@ SmallShell::~SmallShell() {
 // TODO: add your implementation
 }
 
-
-void copyStr (char* src, char* dest) {
-    while (*src != '\0') *dest++ = *src++;
-    *dest = '\0';
-}
 
 void SmallShell::changePrompt(const char *prompt) {
     int i=0;
@@ -176,6 +179,13 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     else if (firstWord.compare("kill") == 0) {
         return new KillCommand(cmd_line);
     }
+    else if (firstWord.compare("fg") == 0) {
+        return new ForegroundCommand(cmd_line);
+    }
+    else if (firstWord.compare("bg") == 0) {
+        return new BackgroundCommand(cmd_line);
+    }
+
 
 
 //  else if ...
@@ -197,6 +207,8 @@ void SmallShell::executeCommand(const char *cmd_line) {
     this->getMJobList().removeFinishedJobs();
     Command* cmd = CreateCommand(cmd_line);
     cmd->execute();
+    //TODO delete cmd;
+
 /*
     BuiltInCommand* bi_cmd = dynamic_cast<BuiltInCommand*>(cmd);
     // if the command is Build-In Command, we get a pointer, else we get nullptr
@@ -221,7 +233,8 @@ void SmallShell::setMPLastPwd(char *lastPwd) {
 }
 
 void SmallShell::setMPCurrPwd() {
-    getcwd(m_p_currPWD, DIR_MAX_LEN);
+    char *res = getcwd(m_p_currPWD, DIR_MAX_LEN);
+    if (res == NULL) perror("smash error: getcwd failed");
 }
 
 const char *SmallShell::getMPLastPwd() const {
@@ -235,6 +248,22 @@ const char* SmallShell::getMPCurrPwd() const {
 JobsList &SmallShell::getMJobList(){
     return m_job_list;
 }
+
+void SmallShell::setFgJob(Job* fg_job) {
+    m_fg_job = fg_job;
+}
+
+
+Job* SmallShell::getFgJob() const {
+    return m_fg_job;
+}
+
+
+/*-------------------
+Commands:
+--------------------*/
+
+
 
 int Command::setCMDLine_R_BG_s(const char *cmd_line) {
     char cmd_line_non_const[COMMAND_MAX_CHARACTERS];
@@ -268,7 +297,9 @@ void ExternalCommand::execute() {
     pid_t pid = fork();
     if (pid==0){
         // child
-        setpgrp();
+        int res = setpgrp();
+	    if (res == -1) perror ("smash error: setpgrp failed");
+
         if (m_is_complex) {
             char cmd_for_bash[COMMAND_MAX_CHARACTERS];
             cmdForBash (m_cmd_line, cmd_for_bash);
@@ -276,7 +307,7 @@ void ExternalCommand::execute() {
             /// TODO: errors
         }
         else {
-            execv(m_cmd_line[0], m_cmd_line);
+            execvp(m_cmd_line[0], m_cmd_line);
             /// TODO: errors
         }
     }
@@ -284,7 +315,14 @@ void ExternalCommand::execute() {
         Job* new_job = new Job(-1, pid, FOREGROUND, this->m_full_cmd_line);
         // foreground
         if (!m_is_back_ground){
-            wait(NULL);
+            SmallShell::getInstance().setFgJob(new_job);
+            int res = waitpid(new_job->m_pid ,NULL, WUNTRACED);
+	        if (res == -1) perror("smash error: wait failed");
+	        if (new_job->m_state != STOPPED) {
+		    delete new_job; // TODO if the job only stopped
+		    SmallShell::getInstance().setFgJob(NULL);
+	    }
+
         }
         // background
         else{
@@ -294,9 +332,10 @@ void ExternalCommand::execute() {
             // TODO: wait
         }
     }
-    // error in fork
-    else{
+    // TODO error in fork
 
+    else{
+        perror ("smash error: fork failed");
     }
 #endif
 }
@@ -361,7 +400,8 @@ GetCurrDirCommand::GetCurrDirCommand(const char *cmd_line): BuiltInCommand(cmd_l
 
 void GetCurrDirCommand::execute() {
     char buff[DIR_MAX_LEN] = {0};
-    getcwd(buff, DIR_MAX_LEN); //errors?
+    char* res = getcwd(buff, DIR_MAX_LEN);
+    if (res == NULL) perror ("smash error: getcwd failed");
     cout << buff << endl;
 }
 
@@ -371,7 +411,7 @@ ChangeDirCommand::ChangeDirCommand(const char* cmd_line, char** plastPwd): Built
 }
 
 void ChangeDirCommand::execute() {
-
+    //TODO cd twice to same dir, and then cd -
     char asked_path[COMMAND_ARGS_MAX_LENGTH];
     char curr_pwd[COMMAND_ARGS_MAX_LENGTH];
     char old_pwd[COMMAND_ARGS_MAX_LENGTH];
@@ -402,6 +442,11 @@ void ChangeDirCommand::execute() {
     }
 }
 
+/*--------------------
+Job struct:
+---------------------*/
+
+
 Job::Job(int job_id, int pid, STATE state, const char* cmd_line): m_job_id(job_id), m_pid(pid),
 m_state(state), m_insert_time(time(NULL)) {
     strcpy(m_full_cmd_line, cmd_line);
@@ -415,6 +460,16 @@ std::ostream& operator<<(ostream& os, const Job& job) {
     }
     return os;
 }
+
+void Job::print2() const {
+    cout << this->m_full_cmd_line << " : " << m_pid << endl;
+}
+
+
+/*--------------------
+JobsList class:
+---------------------*/
+
 
 JobsList::~JobsList() {
     for (Job* job: m_list) {
@@ -449,31 +504,46 @@ void JobsList::printJobsList() {
 
 void JobsList::removeFinishedJobs() {
 #ifndef RUN_LOCAL
-    std::list<Job *> tmp_list;
-    for (Job *job: m_list) {
+    std::list<Job*> tmp_list;
+    for (Job* job: m_list) {
         pid_t res = waitpid(job->m_pid, NULL, WNOHANG);
-        if (res) {
-            tmp_list.push_back(job);
+	if (res == -1) perror("smash error: wait failed");
+        else if (res){
+            //delete job;
+            //m_list.remove(job);
+	    tmp_list.push_back(job);
         }
     }
-    for (Job *job: tmp_list) {
+    for (Job* job: tmp_list) {
         delete job;
         m_list.remove(job);
     }
 #endif
 }
 
+
 Job *JobsList::getJobById(int jobId) {
+    Job* temp = NULL;
 #ifndef RUN_LOCAL
     this->removeFinishedJobs();
-    Job* temp;
+#endif
     for (Job *job: m_list) {
         if(job->m_job_id == jobId){
             temp=job;
         }
     }
     return temp;
-#endif
+}
+
+void JobsList::removeJobById(int job_id) {
+    for (Job *job_ptr: m_list) {
+        if (job_ptr->m_job_id == job_id) {
+            m_list.remove(job_ptr);
+            return;
+        }
+    }
+    cerr << "the job by id " << job_id << " is not exist" << endl;
+    assert (false);
 }
 
 void JobsList::killAllJobs() {
@@ -489,33 +559,43 @@ Job *JobsList::getLastJob() {
     return *(--(this->m_list.end()));
 }
 
-QuitCommand::QuitCommand(const char* cmd_line): BuiltInCommand(cmd_line),
-                                                m_kill(false),
-                                                m_another_args(false){
-    char* other_arg;
-    int is_kill = strcmp("kill", this->getMCmdLine()[1]);
-    if (this->getMCmdLine()[ANOTHER_ARGS] != NULL){
-        m_another_args = true;
+Job* JobsList::getLastJob() {
+    if (m_list.size() == 0) return NULL;
+    else return *(--m_list.end());
+}
+
+int JobsList::getSize() const{
+    return m_list.size();
+}
+
+Job* JobsList::getLastStoppedJob() {
+    for (list<Job*>::iterator it=m_list.end() ; it != m_list.begin(); ) {
+        if ((*--it)->m_state == STOPPED) return *it;
     }
-    if (is_kill == 0){
-        m_kill = true;
+    return NULL;
+}
+
+
+/*
+ * Quit Command
+ */
+QuitCommand::QuitCommand(const char* cmd_line): BuiltInCommand(cmd_line),
+                                                m_kill(false){
+    for (int i = 1; this->getMCmdLine()[i]!=NULL; ++i) {
+        if (!strcmp("kill", this->getMCmdLine()[i])){
+            m_kill = true;
+            break;
+        }
     }
 }
 
 
 void QuitCommand::execute() {
-    /// TODO: another args should ignored means if exist so still do the func or no?
     if (m_kill){
-        Job* last_job = SmallShell::getInstance().getMJobList().getLastJob();
         /// TODO: what should we do if there is no jobs? still print?
-        int num;
-        if (last_job != nullptr){
-            num = last_job->m_job_id;
-        }
-        else{
-            num = 0;
-        }
-        cout << "smash: sending SIGKILL signal to "<< num << " jobs:" << endl;
+        cout << "smash: sending SIGKILL signal to "<< SmallShell::getInstance().getMJobList().getSize() << " jobs:" << endl;
+
+        ///TODO: change the print format
         SmallShell::getInstance().getMJobList().printJobsList();
         SmallShell::getInstance().getMJobList().killAllJobs();
     }
@@ -523,6 +603,9 @@ void QuitCommand::execute() {
     /// TODO: check if its could fail
 }
 
+/*
+ * kill Command
+ */
 
 KillCommand::KillCommand(const char *cmd_line): BuiltInCommand(cmd_line) {}
 
@@ -530,8 +613,8 @@ void KillCommand::execute() {
 
     int signal_id;
     int job_id;
-    char c_signal_id[27];
-    char c_job_id[27];
+    char* c_signal_id;
+    char* c_job_id;
 
     // check if there are too many args
     if (this->getMCmdLine()[ANOTHER_ARGS+1] != NULL){
@@ -570,3 +653,94 @@ void KillCommand::execute() {
     }
 
 }
+
+ForegroundCommand::ForegroundCommand(const char *cmd_line): BuiltInCommand(cmd_line) {}
+
+
+bool _isNum (char* c) {
+    for (char* p = c; *p != '\0'; p++) {
+        if (*p < '0' || *p > '9') return false;
+    }
+    return true;
+}
+
+
+void ForegroundCommand::execute() {
+    Job* job_ptr = NULL;
+    if (m_cmd_line[1] == NULL) {
+        job_ptr = SmallShell::getInstance().getMJobList().getLastJob();
+        if (job_ptr == NULL) {
+            cerr << "smash error: fg: jobs list is empty" << endl;
+            return;
+        }
+    }
+    else {
+        if (m_cmd_line[ANOTHER_ARGS] != NULL || !_isNum (m_cmd_line[1])) {
+            cerr << "smash error: fg: invalid arguments" << endl;
+            return;
+        }
+        int job_id = stoi(string(m_cmd_line[1]));
+        job_ptr = SmallShell::getInstance().getMJobList().getJobById(job_id);
+        if (job_ptr == NULL) {
+            cerr << "smash error: fg: job-id " << job_id << " does not exist" << endl;
+            return;
+        }
+    }
+    SmallShell::getInstance().getMJobList().removeJobById(job_ptr->m_job_id);
+    assert(SmallShell::getInstance().getFgJob() == NULL);
+    SmallShell::getInstance().setFgJob(job_ptr);
+    job_ptr->print2();
+    if (job_ptr->m_state == STOPPED) {
+        int res = kill (job_ptr->m_pid, SIGCONT);
+        if (res == -1){
+            perror("smash error: kill failed");
+        }
+    }
+    int res = waitpid(job_ptr->m_pid, NULL, WUNTRACED);
+    if (res == -1){
+        perror("smash error: wait failed");
+    }
+    if (job_ptr->m_state != STOPPED) {
+        assert(job_ptr->m_state == FOREGROUND);
+        delete job_ptr;
+        SmallShell::getInstance().setFgJob(NULL);
+    }
+}
+
+
+
+BackgroundCommand::BackgroundCommand(const char *cmd_line): BuiltInCommand(cmd_line) {}
+
+
+void BackgroundCommand::execute() {
+    Job* job_ptr = NULL;
+    if (m_cmd_line[1] == NULL) {
+        job_ptr = SmallShell::getInstance().getMJobList().getLastStoppedJob();
+        if (job_ptr == NULL) {
+            cerr << "smash error: bg: there is no stopped jobs to resume" << endl;
+            return;
+        }
+    }
+    else {
+        if (m_cmd_line[2] != NULL || !_isNum (m_cmd_line[1])) {
+            cerr << "smash error: bg: invalid arguments" << endl;
+            return;
+        }
+        int job_id = stoi(string(m_cmd_line[1]));
+        job_ptr = SmallShell::getInstance().getMJobList().getJobById(job_id);
+        if (job_ptr == NULL) {
+            cerr << "smash error: bg: job-id " << job_id << " does not exist" << endl;
+            return;
+        }
+        if (job_ptr->m_state != STOPPED) {
+            assert (job_ptr->m_state == BACKGROUND);
+            cerr << "smash error: bg: job-id " << job_id << " is already running in the background" << endl;
+            return;
+        }
+    }
+    job_ptr->print2();
+    job_ptr->m_state = BACKGROUND;
+    int res = kill (job_ptr->m_pid, SIGCONT);
+    if (res == -1) perror("smash error: kill failed");
+}
+
