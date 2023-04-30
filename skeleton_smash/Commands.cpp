@@ -173,6 +173,9 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     else if (firstWord.compare("quit") == 0) {
         return new QuitCommand(cmd_line);
     }
+    else if (firstWord.compare("kill") == 0) {
+        return new KillCommand(cmd_line);
+    }
 
 
 //  else if ...
@@ -460,6 +463,19 @@ void JobsList::removeFinishedJobs() {
 #endif
 }
 
+Job *JobsList::getJobById(int jobId) {
+#ifndef RUN_LOCAL
+    this->removeFinishedJobs();
+    Job* temp;
+    for (Job *job: m_list) {
+        if(job->m_job_id == jobId){
+            temp=job;
+        }
+    }
+    return temp;
+#endif
+}
+
 void JobsList::killAllJobs() {
 #ifndef RUN_LOCAL
     this->removeFinishedJobs();
@@ -506,4 +522,52 @@ void QuitCommand::execute() {
     }
     exit(EXIT_SUCCESS);
     /// TODO: check if its could fail
+}
+
+
+KillCommand::KillCommand(const char *cmd_line): BuiltInCommand(cmd_line) {}
+
+void KillCommand::execute() {
+
+    int signal_id;
+    int job_id;
+    char c_signal_id[27];
+    char c_job_id[27];
+
+    // check if there are too many args
+    if (this->getMCmdLine()[ANOTHER_ARGS+1] != NULL){
+        perror("smash error: kill: invalid arguments");
+    }
+
+    // check if there is job_id, too few args
+    if (this->getMCmdLine()[ANOTHER_ARGS] == NULL){
+        perror("smash error: kill: invalid arguments");
+    }
+    else{
+        //get the job_id in int
+        for (int i = 0; this->getMCmdLine()[ANOTHER_ARGS][i]!='\0'; ++i) {
+            c_job_id[i]=this->getMCmdLine()[ANOTHER_ARGS][i];
+        }
+        sscanf(c_job_id, "%d", &job_id);
+    }
+
+    // get the signal num in int
+    if (this->getMCmdLine()[ANOTHER_ARGS-1] != NULL) {
+        for (int i = 1; this->getMCmdLine()[ANOTHER_ARGS-1][i]!='\0'; ++i) {
+            c_signal_id[i]=this->getMCmdLine()[ANOTHER_ARGS - 1][i];
+        }
+        sscanf(c_signal_id, "%d", &signal_id);
+    }
+
+    // get the specific job
+    Job* job = SmallShell::getInstance().getMJobList().getJobById(job_id);
+    if (job != nullptr){
+        #ifndef RUN_LOCAL
+        kill(job->m_pid, signal_id);
+        #endif
+    }
+    else{
+        cerr << "smash error: kill: job-id " << c_job_id << " does not exist" << endl;
+    }
+
 }

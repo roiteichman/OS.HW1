@@ -137,7 +137,7 @@ public:
   void printJobsList();
   void killAllJobs();
   void removeFinishedJobs();
-  JobEntry * getJobById(int jobId);
+  Job* getJobById(int jobId);
   void removeJobById(int jobId);
   Job* getLastJob();
   JobEntry *getLastStoppedJob(int *jobId);
@@ -204,8 +204,8 @@ class SetcoreCommand : public BuiltInCommand {
 class KillCommand : public BuiltInCommand {
  // TODO: Add your data members
  public:
-  KillCommand(const char* cmd_line, JobsList* jobs);
-  virtual ~KillCommand() {}
+  KillCommand(const char* cmd_line);
+  virtual ~KillCommand() = default;
   void execute() override;
 };
 
