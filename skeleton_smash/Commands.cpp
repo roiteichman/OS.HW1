@@ -285,11 +285,9 @@ Command::Command(const char *cmd_line): m_is_back_ground(_isBackgroundComamnd(cm
 }
 
 Command::~Command() noexcept {
-    int i = 0;
-    for (i = 0; m_cmd_line[i]!=NULL ; ++i) {
+    for (int i = 0; m_cmd_line[i]!=NULL ; ++i) {
         free(m_cmd_line[i]);
     }
-   free(m_cmd_line[i]);
 }
 
 BuiltInCommand::BuiltInCommand(const char *cmd_line): Command(cmd_line) {}
