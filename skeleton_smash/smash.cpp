@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
     SmallShell& smash = SmallShell::getInstance();
 
 
-    while(true) {
+    //while(true) {
         smash.printPrompt();
         std::string cmd_line;
         std::getline(std::cin, cmd_line);
@@ -34,7 +34,7 @@ int main(int argc, char* argv[]) {
         if (smash.isMFinish()){
             exit(EXIT_SUCCESS);
         }
-   }
+   //}
 
 
 
