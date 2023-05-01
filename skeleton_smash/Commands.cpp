@@ -551,7 +551,22 @@ PipeCommand::~PipeCommand() noexcept {
     delete m_read_cmd;
 }
 
-void PipeCommand::execute() {}
+void PipeCommand::execute() {
+#ifndef RUN_LOCAL
+    int my_pipe[2];
+    int res = pipe(my_pipe);
+    int screen = dup(1);
+    dup2(my_pipe[1], 1);
+    m_write_cmd->execute();
+    dup2(screen, 1);
+    int keyboard = dup(0);
+    dup2(my_pipe[0], 0);
+    m_read_cmd->execute();
+    dup2(keyboard, 0);
+    close(my_pipe[0]);
+    close(my_pipe[1]);
+#endif
+}
 
 
 /*--------------------
