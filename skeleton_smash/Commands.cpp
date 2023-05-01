@@ -610,6 +610,7 @@ void QuitCommand::execute() {
         SmallShell::getInstance().getMJobList().printJobsList();
         SmallShell::getInstance().getMJobList().killAllJobs();
     }
+    delete this;
     exit(EXIT_SUCCESS);
     /// TODO: check if its could fail
 }
