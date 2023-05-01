@@ -562,12 +562,13 @@ void PipeCommand::execute() {
         perror("smash error: pipe failed");
     }
 
-    int screen = dup(1);
-    if (screen == -1){
+    int out = m_error ? ERR_FD_INDEX : OUT_FD_INDEX;
+
+
+    int stdOutOrErr = dup(out);
+    if (stdOutOrErr == -1){
         perror("smash error: dup failed");
     }
-
-    int out = m_error ? ERR_FD_INDEX : OUT_FD_INDEX;
 
     int res3 = dup2(my_pipe[OUT_FD_INDEX], out);
     if (res3 == -1){
@@ -580,7 +581,7 @@ void PipeCommand::execute() {
     if (res4 == -1){
         perror("smash error: close failed");
     }
-    int res5 = dup2(screen, OUT_FD_INDEX);
+    int res5 = dup2(stdOutOrErr, out);
     if (res5 == -1){
         perror("smash error: dup2 failed");
     }
