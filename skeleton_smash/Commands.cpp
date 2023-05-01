@@ -41,6 +41,9 @@ const std::string WHITESPACE = " \n\r\t\f\v";
 #define SIGKILL 9
 #define LONG_REDIRECTION_SIGN 2
 #define LONG_PIPE_SIGN 2
+#define IN_FD_INDEX 0
+#define OUT_FD_INDEX 1
+#define ERR_FD_INDEX 2
 
 
 string _ltrim(const std::string& s)
@@ -554,22 +557,53 @@ PipeCommand::~PipeCommand() noexcept {
 void PipeCommand::execute() {
 #ifndef RUN_LOCAL
     int external_pipe[2];
-    int internal_pipe[2];
     int res = pipe(external_pipe);
+    if (res == -1){
+        perror("smash error: pipe failed");
+    }
     int res2 = pipe(internal_pipe);
+    if (res2 == -1){
+        perror("smash error: pipe failed");
+    }
     int screen = dup(1);
-    dup2(external_pipe[1], 1);
+    if (screen == -1){
+        perror("smash error: dup failed");
+    }
+
+    int out = m_error ? ERR_FD_INDEX : OUT_FD_INDEX;
+
+    int res3 = dup2(external_pipe[OUT_FD_INDEX], out);
+    if (res3 == -1){
+        perror("smash error: dup2 failed");
+    }
     m_write_cmd->execute();
     // need to close the entrance to the pipe before make the other cmd
     // else the pipe is open after execv and the other cmd wait for input
-    close(external_pipe[1]);
-
-    dup2(screen, 1);
-    int keyboard = dup(0);
-    dup2(external_pipe[0], 0);
+    int res4 = close(external_pipe[OUT_FD_INDEX]);
+    if (res4 == -1){
+        perror("smash error: close failed");
+    }
+    int res5 = dup2(screen, OUT_FD_INDEX);
+    if (res5 == -1){
+        perror("smash error: dup2 failed");
+    }
+    int keyboard = dup(IN_FD_INDEX);
+    if (keyboard == -1){
+        perror("smash error: dup failed");
+    }
+    int res6 = dup2(external_pipe[IN_FD_INDEX], IN_FD_INDEX);
+    if (res6 == -1){
+        perror("smash error: dup2 failed");
+    }
     m_read_cmd->execute();
-    dup2(keyboard, 0);
-    close(external_pipe[0]);
+    int res7 = dup2(keyboard, IN_FD_INDEX);
+    if (res7 == -1){
+        perror("smash error: dup2 failed");
+    }
+    int res8 = close(external_pipe[IN_FD_INDEX]);
+    if (res8 == -1){
+        perror("smash error: close failed");
+    }
 #endif
 }
 
