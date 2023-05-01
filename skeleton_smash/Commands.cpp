@@ -560,7 +560,10 @@ void PipeCommand::execute() {
     int screen = dup(1);
     dup2(external_pipe[1], 1);
     m_write_cmd->execute();
+    // need to close the entrance to the pipe before make the other cmd
+    // else the pipe is open after execv and the other cmd wait for input
     close(external_pipe[1]);
+
     dup2(screen, 1);
     int keyboard = dup(0);
     dup2(external_pipe[0], 0);
