@@ -48,9 +48,12 @@ public:
 
 class PipeCommand : public Command {
   // TODO: Add your data members
+  Command* m_write_cmd;
+  Command* m_read_cmd;
+  bool m_error;
  public:
-  PipeCommand(const char* cmd_line);
-  virtual ~PipeCommand() {}
+  PipeCommand(const char* cmd_line, int separate);
+  virtual ~PipeCommand();
   void execute() override;
 };
 

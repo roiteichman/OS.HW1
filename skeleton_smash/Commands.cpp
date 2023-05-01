@@ -40,6 +40,7 @@ const std::string WHITESPACE = " \n\r\t\f\v";
 #define DIR_MAX_LEN 200
 #define SIGKILL 9
 #define LONG_REDIRECTION_SIGN 2
+#define LONG_PIPE_SIGN 2
 
 
 string _ltrim(const std::string& s)
@@ -117,6 +118,15 @@ int _isRedirection(const char* cmd_line){
     return -1;
 }
 
+int _isPipe(const char* cmd_line){
+    for (int i = 0; cmd_line[i] != '\0' ; ++i) {
+        if (cmd_line[i]=='|'){
+            return i;
+        }
+    }
+    return -1;
+}
+
 void cmdForBash (char** cmd_source, char* dest) {
     while (*cmd_source != NULL) {
         strcpy(dest, *cmd_source);
@@ -169,6 +179,9 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
 
     if (_isRedirection(cmd_line) >= 0) {
         return new RedirectionCommand(cmd_line, _isRedirection(cmd_line));
+    }
+    else if (_isPipe(cmd_line) >= 0) {
+        return new PipeCommand(cmd_line, _isPipe(cmd_line));
     }
     else if (firstWord.compare("chprompt") == 0 || firstWord.compare("chprompt&") == 0) {
         return new ChangePrompt(cmd_line);
@@ -498,13 +511,48 @@ RedirectionCommand::~RedirectionCommand() noexcept {
 }
 
 void RedirectionCommand::execute() {
+    #ifndef RUN_LOCAL
     int new_screen_fd = dup(1);
-    close(1);
-    open(m_path, m_append ? (O_WRONLY | O_CREAT | O_APPEND) : (O_WRONLY | O_CREAT), 0666);
+    if (new_screen_fd == -1){
+        Perror("smash error: dup failed");
+    }
+    int res = close(1);
+    if (res == -1){
+        Perror("smash error: close failed");
+    }
+    int res2 = open(m_path, m_append ? (O_WRONLY | O_CREAT | O_APPEND) : (O_WRONLY | O_CREAT), 0666);
+    if (res2 == -1){
+        Perror("smash error: open failed");
+    }
     m_cmd->execute();
-    dup2(new_screen_fd, 1);
-    close(new_screen_fd);
+    int res3 = dup2(new_screen_fd, 1);
+    if (res3 == -1){
+        Perror("smash error: dup2 failed");
+    }
+    int res4 = close(new_screen_fd);
+    if (res4 == -1){
+        Perror("smash error: close failed");
+    }
+    #endif
 }
+
+PipeCommand::PipeCommand(const char *cmd_line, int separate): Command(cmd_line),
+m_error(cmd_line[separate+1]=='&'), m_read_cmd(NULL), m_write_cmd(NULL){
+    int separate_len = m_error ? LONG_PIPE_SIGN : 1;
+    char temp_cmd[COMMAND_MAX_CHARACTERS];
+    strcpy(temp_cmd,cmd_line);
+    temp_cmd[separate]='\0';
+    m_write_cmd = SmallShell::getInstance().CreateCommand(temp_cmd);
+    m_read_cmd = SmallShell::getInstance().CreateCommand(temp_cmd+separate+separate_len);
+}
+
+PipeCommand::~PipeCommand() noexcept {
+    delete m_write_cmd;
+    delete m_read_cmd;
+}
+
+void PipeCommand::execute() {}
+
 
 /*--------------------
 Job struct:
