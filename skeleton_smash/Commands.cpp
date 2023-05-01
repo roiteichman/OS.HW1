@@ -494,7 +494,14 @@ RedirectionCommand::~RedirectionCommand() noexcept {
     delete m_cmd;
 }
 
-void RedirectionCommand::execute() {}
+void RedirectionCommand::execute() {
+    int new_screen_fd = dup(1);
+    close(1);
+    open(m_path, m_append ? (O_WRONLY | O_CREAT | O_APPEND) : (O_WRONLY | O_CREAT), 0666);
+    m_cmd->execute();
+    dup2(new_screen_fd, 1);
+    close(new_screen_fd);
+}
 
 /*--------------------
 Job struct:
