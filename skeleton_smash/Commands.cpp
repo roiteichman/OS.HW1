@@ -122,7 +122,7 @@ SmallShell methods:
 --------------------*/
 
 SmallShell::SmallShell() :
-    m_fg_job(NULL) {
+    m_fg_job(NULL), m_finish(false) {
     strcpy(m_prompt, "smash");
     char buff[COMMAND_ARGS_MAX_LENGTH] = {0};
     char* res = getcwd(buff, COMMAND_ARGS_MAX_LENGTH);
@@ -203,12 +203,8 @@ void SmallShell::executeCommand(const char *cmd_line) {
 
     this->getMJobList().removeFinishedJobs();
     Command* cmd = CreateCommand(cmd_line);
-    QuitCommand* quit_cmd = dynamic_cast<QuitCommand*>(cmd);
     cmd->execute();
     delete cmd;
-    if (quit_cmd!= nullptr){
-        exit(EXIT_SUCCESS);
-    }
 
 /*
     BuiltInCommand* bi_cmd = dynamic_cast<BuiltInCommand*>(cmd);
@@ -257,6 +253,14 @@ void SmallShell::setFgJob(Job* fg_job) {
 
 Job* SmallShell::getFgJob() const {
     return m_fg_job;
+}
+
+void SmallShell::setMFinish(bool mFinish) {
+    m_finish = mFinish;
+}
+
+bool SmallShell::isMFinish() const {
+    return m_finish;
 }
 
 
@@ -614,7 +618,7 @@ void QuitCommand::execute() {
         SmallShell::getInstance().getMJobList().printJobsList();
         SmallShell::getInstance().getMJobList().killAllJobs();
     }
-    /// TODO: check if its could fail
+    SmallShell::getInstance().setMFinish(true);
 }
 
 bool _isNum (char* c) {

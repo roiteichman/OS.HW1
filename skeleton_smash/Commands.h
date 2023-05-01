@@ -218,6 +218,7 @@ class SmallShell {
   char m_p_currPWD[COMMAND_ARGS_MAX_LENGTH];
   JobsList m_job_list;
   Job* m_fg_job;
+  bool m_finish;
   SmallShell();
  public:
   Command *CreateCommand(const char* cmd_line);
@@ -240,6 +241,10 @@ class SmallShell {
 
     void setMPLastPwd(char* lastPwd);
   void setMPCurrPwd();
+
+    void setMFinish(bool mFinish);
+
+    bool isMFinish() const;
 
     JobsList& getMJobList();
     void setFgJob(Job* fg_job);
