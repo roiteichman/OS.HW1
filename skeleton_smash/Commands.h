@@ -8,7 +8,7 @@
 #define COMMAND_MAX_ARGS (20)
 #define COMMAND_MAX_CHARACTERS (80)
 
-//#define RUN_LOCAL
+#define RUN_LOCAL
 
 class Command {
     // TODO: Add your data members
@@ -55,14 +55,18 @@ class PipeCommand : public Command {
 };
 
 class RedirectionCommand : public Command {
- // TODO: Add your data members
+    // TODO: Add your data members
+    bool m_append;
+    Command* m_cmd;
+    char m_path[COMMAND_MAX_CHARACTERS];
  public:
-  explicit RedirectionCommand(const char* cmd_line);
-  virtual ~RedirectionCommand() {}
+  explicit RedirectionCommand(const char* cmd_line, int separate);
+  virtual ~RedirectionCommand();
   void execute() override;
   //void prepare() override;
   //void cleanup() override;
 };
+
 
 class ChangePrompt : public BuiltInCommand{
  public:

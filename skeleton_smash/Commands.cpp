@@ -36,6 +36,7 @@ const std::string WHITESPACE = " \n\r\t\f\v";
 #define ANOTHER_ARGS 2
 #define DIR_MAX_LEN 200
 #define SIGKILL 9
+#define LONG_REDIRECTION_SIGN 2
 
 
 string _ltrim(const std::string& s)
@@ -104,6 +105,14 @@ bool _isComplexCommand (const char* cmd_line) {
     return false;
 }
 
+int _isRedirection(const char* cmd_line){
+    for (int i = 0; cmd_line[i] != '\0' ; ++i) {
+        if (cmd_line[i]=='>'){
+            return i;
+        }
+    }
+    return -1;
+}
 
 void cmdForBash (char** cmd_source, char* dest) {
     while (*cmd_source != NULL) {
@@ -155,7 +164,10 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     string cmd_s = _trim(string(cmd_line));
     string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
 
-    if (firstWord.compare("chprompt") == 0 || firstWord.compare("chprompt&") == 0) {
+    if (_isRedirection(cmd_line) >= 0) {
+        return new RedirectionCommand(cmd_line, _isRedirection(cmd_line));
+    }
+    else if (firstWord.compare("chprompt") == 0 || firstWord.compare("chprompt&") == 0) {
         return new ChangePrompt(cmd_line);
     }
 
@@ -165,6 +177,7 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     else if (firstWord.compare("showpid") == 0 || firstWord.compare("showpid&") == 0) {
         return new ShowPidCommand(cmd_line);
     }
+    //TODO: cd& + second word is NULL
     else if (firstWord.compare("cd") == 0 || firstWord.compare("cd&") == 0) {
         char lastPWD[COMMAND_ARGS_MAX_LENGTH]={0};
         strcpy(lastPWD, SmallShell::getInstance().getMPLastPwd());
@@ -267,8 +280,6 @@ bool SmallShell::isMFinish() const {
 /*-------------------
 Commands:
 --------------------*/
-
-
 
 int Command::setCMDLine_R_BG_s(const char *cmd_line) {
     char cmd_line_non_const[COMMAND_MAX_CHARACTERS];
@@ -463,6 +474,27 @@ void ChangeDirCommand::execute() {
         SmallShell::getInstance().setMPLastPwd(curr_pwd);
     }
 }
+
+/*
+ * SPECIAL COMMANDS
+ */
+
+RedirectionCommand::RedirectionCommand(const char *cmd_line, int separate): Command(cmd_line),
+    m_append(cmd_line[separate+1]=='>'),
+    m_cmd(NULL){
+    int separate_len = m_append ? LONG_REDIRECTION_SIGN : 1;
+    strcpy(m_path,_trim(string(cmd_line+separate+separate_len)).c_str());
+    char temp_cmd[COMMAND_MAX_CHARACTERS];
+    strcpy(temp_cmd,cmd_line);
+    temp_cmd[separate]='\0';
+    m_cmd = SmallShell::getInstance().CreateCommand(temp_cmd);
+}
+
+RedirectionCommand::~RedirectionCommand() noexcept {
+    delete m_cmd;
+}
+
+void RedirectionCommand::execute() {}
 
 /*--------------------
 Job struct:
