@@ -514,24 +514,24 @@ void RedirectionCommand::execute() {
     #ifndef RUN_LOCAL
     int new_screen_fd = dup(1);
     if (new_screen_fd == -1){
-        Perror("smash error: dup failed");
+        perror("smash error: dup failed");
     }
     int res = close(1);
     if (res == -1){
-        Perror("smash error: close failed");
+        perror("smash error: close failed");
     }
     int res2 = open(m_path, m_append ? (O_WRONLY | O_CREAT | O_APPEND) : (O_WRONLY | O_CREAT), 0666);
     if (res2 == -1){
-        Perror("smash error: open failed");
+        perror("smash error: open failed");
     }
     m_cmd->execute();
     int res3 = dup2(new_screen_fd, 1);
     if (res3 == -1){
-        Perror("smash error: dup2 failed");
+        perror("smash error: dup2 failed");
     }
     int res4 = close(new_screen_fd);
     if (res4 == -1){
-        Perror("smash error: close failed");
+        perror("smash error: close failed");
     }
     #endif
 }
