@@ -553,18 +553,20 @@ PipeCommand::~PipeCommand() noexcept {
 
 void PipeCommand::execute() {
 #ifndef RUN_LOCAL
-    int my_pipe[2];
-    int res = pipe(my_pipe);
+    int external_pipe[2];
+    int internal_pipe[2];
+    int res = pipe(external_pipe);
+    int res2 = pipe(internal_pipe);
     int screen = dup(1);
-    dup2(my_pipe[1], 1);
+    dup2(external_pipe[1], 1);
     m_write_cmd->execute();
+    close(external_pipe[1]);
     dup2(screen, 1);
     int keyboard = dup(0);
-    dup2(my_pipe[0], 0);
+    dup2(external_pipe[0], 0);
     m_read_cmd->execute();
     dup2(keyboard, 0);
-    close(my_pipe[0]);
-    close(my_pipe[1]);
+    close(external_pipe[0]);
 #endif
 }
 
