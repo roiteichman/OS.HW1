@@ -10,6 +10,9 @@
 #include "Commands.h"
 #ifndef RUN_LOCAL
 #include <sys/wait.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #endif
 #include <unistd.h>
 #include <time.h>
