@@ -60,7 +60,7 @@ int _parseCommandLine(const char* cmd_line, char** args) {
     int i = 0;
     std::istringstream iss(_trim(string(cmd_line)).c_str());
     for(std::string s; iss >> s; ) {
-        args[i] = (char*)malloc(s.length()+1);
+        args[i] = new char[(s.length()+1)];
         memset(args[i], 0, s.length()+1);
         strcpy(args[i], s.c_str());
         args[++i] = NULL;
@@ -286,7 +286,7 @@ Command::Command(const char *cmd_line): m_is_back_ground(_isBackgroundComamnd(cm
 
 Command::~Command() noexcept {
     for (int i = 0; m_cmd_line[i]!=NULL ; ++i) {
-        free(m_cmd_line[i]);
+        delete[] m_cmd_line[i];
     }
 }
 

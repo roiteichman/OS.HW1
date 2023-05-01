@@ -8,7 +8,7 @@
 #define COMMAND_MAX_ARGS (20)
 #define COMMAND_MAX_CHARACTERS (80)
 
-//#define RUN_LOCAL
+#define RUN_LOCAL
 
 class Command {
     // TODO: Add your data members
