@@ -285,9 +285,11 @@ Command::Command(const char *cmd_line): m_is_back_ground(_isBackgroundComamnd(cm
 }
 
 Command::~Command() noexcept {
-    for (int i = 0; m_cmd_line[i]!=NULL ; ++i) {
+    int i = 0;
+    for (i = 0; m_cmd_line[i]!=NULL ; ++i) {
         free(m_cmd_line[i]);
     }
+   free(m_cmd_line[i]);
 }
 
 BuiltInCommand::BuiltInCommand(const char *cmd_line): Command(cmd_line) {}
@@ -708,6 +710,7 @@ void ForegroundCommand::execute() {
     assert(SmallShell::getInstance().getFgJob() == NULL);
     SmallShell::getInstance().setFgJob(job_ptr);
     job_ptr->print2();
+    #ifndef RUN_LOCAL
     if (job_ptr->m_state == STOPPED) {
         int res = kill (job_ptr->m_pid, SIGCONT);
         if (res == -1){
@@ -718,6 +721,7 @@ void ForegroundCommand::execute() {
     if (res == -1){
         perror("smash error: wait failed");
     }
+    #endif
     if (job_ptr->m_state != STOPPED) {
         assert(job_ptr->m_state == FOREGROUND);
         delete job_ptr;
@@ -758,7 +762,9 @@ void BackgroundCommand::execute() {
     }
     job_ptr->print2();
     job_ptr->m_state = BACKGROUND;
+    #ifndef RUN_LOCAL
     int res = kill (job_ptr->m_pid, SIGCONT);
     if (res == -1) perror("smash error: kill failed");
+    #endif
 }
 
