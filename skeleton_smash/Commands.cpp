@@ -556,15 +556,12 @@ PipeCommand::~PipeCommand() noexcept {
 
 void PipeCommand::execute() {
 #ifndef RUN_LOCAL
-    int external_pipe[2];
-    int res = pipe(external_pipe);
+    int my_pipe[2];
+    int res = pipe(my_pipe);
     if (res == -1){
         perror("smash error: pipe failed");
     }
-    int res2 = pipe(internal_pipe);
-    if (res2 == -1){
-        perror("smash error: pipe failed");
-    }
+
     int screen = dup(1);
     if (screen == -1){
         perror("smash error: dup failed");
@@ -572,14 +569,14 @@ void PipeCommand::execute() {
 
     int out = m_error ? ERR_FD_INDEX : OUT_FD_INDEX;
 
-    int res3 = dup2(external_pipe[OUT_FD_INDEX], out);
+    int res3 = dup2(my_pipe[OUT_FD_INDEX], out);
     if (res3 == -1){
         perror("smash error: dup2 failed");
     }
     m_write_cmd->execute();
     // need to close the entrance to the pipe before make the other cmd
     // else the pipe is open after execv and the other cmd wait for input
-    int res4 = close(external_pipe[OUT_FD_INDEX]);
+    int res4 = close(my_pipe[OUT_FD_INDEX]);
     if (res4 == -1){
         perror("smash error: close failed");
     }
@@ -591,7 +588,7 @@ void PipeCommand::execute() {
     if (keyboard == -1){
         perror("smash error: dup failed");
     }
-    int res6 = dup2(external_pipe[IN_FD_INDEX], IN_FD_INDEX);
+    int res6 = dup2(my_pipe[IN_FD_INDEX], IN_FD_INDEX);
     if (res6 == -1){
         perror("smash error: dup2 failed");
     }
@@ -600,7 +597,7 @@ void PipeCommand::execute() {
     if (res7 == -1){
         perror("smash error: dup2 failed");
     }
-    int res8 = close(external_pipe[IN_FD_INDEX]);
+    int res8 = close(my_pipe[IN_FD_INDEX]);
     if (res8 == -1){
         perror("smash error: close failed");
     }
