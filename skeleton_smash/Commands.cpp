@@ -203,8 +203,12 @@ void SmallShell::executeCommand(const char *cmd_line) {
 
     this->getMJobList().removeFinishedJobs();
     Command* cmd = CreateCommand(cmd_line);
+    QuitCommand* quit_cmd = dynamic_cast<QuitCommand*>(cmd);
     cmd->execute();
     delete cmd;
+    if (quit_cmd!= nullptr){
+        exit(EXIT_SUCCESS);
+    }
 
 /*
     BuiltInCommand* bi_cmd = dynamic_cast<BuiltInCommand*>(cmd);
@@ -610,8 +614,6 @@ void QuitCommand::execute() {
         SmallShell::getInstance().getMJobList().printJobsList();
         SmallShell::getInstance().getMJobList().killAllJobs();
     }
-    delete this;
-    exit(EXIT_SUCCESS);
     /// TODO: check if its could fail
 }
 
