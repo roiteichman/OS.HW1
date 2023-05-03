@@ -12,6 +12,7 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/sysinfo.h>
 #include <fcntl.h>
 #endif
 #include <unistd.h>
@@ -219,10 +220,12 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     else if (firstWord.compare("bg") == 0 || firstWord.compare("bg&") == 0) {
         return new BackgroundCommand(cmd_line);
     }
+    else if (firstWord.compare("setcore") == 0 || firstWord.compare("setcore&") == 0) {
+        return new SetcoreCommand(cmd_line);
+    }
     else {
         return new ExternalCommand(cmd_line);
     }
-    return nullptr;
 }
 
 void SmallShell::executeCommand(const char *cmd_line) {
@@ -916,3 +919,33 @@ void BackgroundCommand::execute() {
     #endif
 }
 
+SetcoreCommand::SetcoreCommand(const char *cmd_line): BuiltInCommand(cmd_line) {}
+
+void SetcoreCommand::execute() {
+    if (m_cmd_line[3] != NULL || m_cmd_line[1] == NULL || m_cmd_line[2] == NULL) {
+        cerr << "smash error: setcore: invalid arguments" << endl;
+        return;
+    }
+    if (!_isNum (m_cmd_line[1]) || !_isNum (m_cmd_line[2])) {
+        cerr << "smash error: setcore: invalid arguments" << endl;
+        return;
+    }
+    int job_id = stoi(string(m_cmd_line[1]));
+    int core_num = stoi(string(m_cmd_line[2]));
+    Job* job_ptr = SmallShell::getInstance().getMJobList().getJobById(job_id);
+    if (job_ptr == NULL) {
+        cerr << "smash error: setcore: job-id " << job_id << " does not exist" << endl;
+        return;
+    }
+    if (core_num < 0 || core_num >= get_nprocs_conf()) {
+        cerr << "smash error: setcore: invalid core number" << endl;
+        return;
+    }
+    cpu_set_t set;
+    CPU_ZERO(&set);
+    CPU_SET(core_num,&set);
+    int res = sched_setaffinity(job_ptr->m_pid, sizeof(set), &set);
+    if (res == -1){
+        perror("smash error: sched_setaffinity failed");
+    }
+}
