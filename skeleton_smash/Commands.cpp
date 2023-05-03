@@ -19,6 +19,13 @@
 #include <time.h>
 #include <assert.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+
+//#include <stdint.h>
+//#include <sys/sysmacros.h>
+
+
 
 using namespace std;
 
@@ -930,11 +937,11 @@ void BackgroundCommand::execute() {
 SetcoreCommand::SetcoreCommand(const char *cmd_line): BuiltInCommand(cmd_line) {}
 
 void SetcoreCommand::execute() {
-    if (m_cmd_line[3] != NULL || m_cmd_line[1] == NULL || m_cmd_line[2] == NULL) {
+    if (m_cmd_line[ANOTHER_ARGS+1] != NULL || m_cmd_line[1] == NULL || m_cmd_line[ANOTHER_ARGS] == NULL) {
         cerr << "smash error: setcore: invalid arguments" << endl;
         return;
     }
-    if (!_isNum (m_cmd_line[1]) || !_isNum (m_cmd_line[2])) {
+    if (!_isNum (m_cmd_line[1]) || !_isNum (m_cmd_line[ANOTHER_ARGS])) {
         cerr << "smash error: setcore: invalid arguments" << endl;
         return;
     }
@@ -956,4 +963,41 @@ void SetcoreCommand::execute() {
     if (res == -1){
         perror("smash error: sched_setaffinity failed");
     }
+}
+
+GetFileTypeCommand::GetFileTypeCommand(const char *cmd_line): BuiltInCommand(cmd_line) {}
+
+void printType (const struct stat& sb) {
+    cout << "\"";
+
+    switch (sb.st_mode & S_IFMT) {
+        case S_IFREG:  cout << "regular file";              break;
+        case S_IFDIR:  cout << "directory";                 break;
+        case S_IFCHR:  cout << "character device";          break;
+        case S_IFBLK:  cout << "block device";              break;
+        case S_IFIFO:  cout << "FIFO";                      break;
+        case S_IFLNK:  cout << "symbolic link";             break;
+        case S_IFSOCK: cout << "socket";                    break;
+        default:       cout << "unknown?\n";                break;
+    }
+
+    cout << "\" and takes up" << sb.st_size << " bytes";
+
+}
+
+void GetFileTypeCommand::execute() {
+    if (m_cmd_line[1] == NULL || m_cmd_line[ANOTHER_ARGS] != NULL) {
+        cerr << "smash error: gettype: invalid arguments" << endl;
+        return;
+    }
+    struct stat sb;
+
+    int res = stat(m_cmd_line[1], &sb);
+
+    if (res == -1){
+        perror("smash error: stat failed");
+    }
+
+    cout << m_cmd_line[1] << "'s type is ";
+    printType(sb);
 }

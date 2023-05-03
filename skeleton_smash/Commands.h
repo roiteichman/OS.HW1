@@ -197,7 +197,7 @@ class GetFileTypeCommand : public BuiltInCommand {
   // TODO: Add your data members
  public:
   GetFileTypeCommand(const char* cmd_line);
-  virtual ~GetFileTypeCommand() {}
+  virtual ~GetFileTypeCommand() = default;
   void execute() override;
 };
 
