@@ -1000,3 +1000,4 @@ void GetFileTypeCommand::execute() {
     printType(sb);
     cout << "\" and takes up " << sb.st_size << " bytes" << endl;
 }
+
