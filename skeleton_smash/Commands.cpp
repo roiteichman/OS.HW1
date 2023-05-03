@@ -971,8 +971,6 @@ void SetcoreCommand::execute() {
 GetFileTypeCommand::GetFileTypeCommand(const char *cmd_line): BuiltInCommand(cmd_line) {}
 
 void printType (const struct stat& sb) {
-    cout << "\"";
-
     switch (sb.st_mode & S_IFMT) {
         case S_IFREG:  cout << "regular file";              break;
         case S_IFDIR:  cout << "directory";                 break;
@@ -983,9 +981,6 @@ void printType (const struct stat& sb) {
         case S_IFSOCK: cout << "socket";                    break;
         default:       cout << "unknown?\n";                break;
     }
-
-    cout << "\" and takes up " << sb.st_size << " bytes";
-
 }
 
 void GetFileTypeCommand::execute() {
@@ -1001,6 +996,7 @@ void GetFileTypeCommand::execute() {
         perror("smash error: stat failed");
     }
 
-    cout << m_cmd_line[1] << "'s type is ";
+    cout << m_cmd_line[1] << "'s type is \"";
     printType(sb);
+    cout << "\" and takes up " << sb.st_size << " bytes" << endl;
 }
