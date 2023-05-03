@@ -230,6 +230,9 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     else if (firstWord.compare("setcore") == 0 || firstWord.compare("setcore&") == 0) {
         return new SetcoreCommand(cmd_line);
     }
+    else if (firstWord.compare("getfiletype") == 0 || firstWord.compare("getfiletype&") == 0) {
+        return new GetFileTypeCommand(cmd_line);
+    }
     else {
         return new ExternalCommand(cmd_line);
     }
