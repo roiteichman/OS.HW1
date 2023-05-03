@@ -984,7 +984,7 @@ void printType (const struct stat& sb) {
         default:       cout << "unknown?\n";                break;
     }
 
-    cout << "\" and takes up" << sb.st_size << " bytes";
+    cout << "\" and takes up " << sb.st_size << " bytes";
 
 }
 
