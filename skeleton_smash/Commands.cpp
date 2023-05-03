@@ -828,6 +828,14 @@ void KillCommand::execute() {
     if (res==-1){
         perror("smash error: kill failed");
     }
+    else{
+        if (signal_id == SIGSTOP || signal_id == SIGTSTP){
+            job_ptr->m_state=STOPPED;
+        }
+        else if(signal_id == SIGCONT){
+            job_ptr->m_state=BACKGROUND;
+        }
+    }
     //TODO - what happend if signal id is out of range
     #endif
 }
