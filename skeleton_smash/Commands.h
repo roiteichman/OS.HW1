@@ -141,6 +141,7 @@ public:
   JobsList() = default;
   ~JobsList();
   int addNewJob(Job* job);
+  void addOldJob (Job* job);
   void printJobsList();
   void killAllJobs();
   void removeFinishedJobs();

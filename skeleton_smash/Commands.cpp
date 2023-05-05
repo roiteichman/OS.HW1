@@ -666,6 +666,16 @@ int JobsList::addNewJob(Job* job){
     return new_index;
 }
 
+void JobsList::addOldJob (Job* job) {
+    this->removeFinishedJobs();
+    job->m_insert_time=time(NULL);
+    list<Job*>::iterator it = m_list.begin();
+    for (; it != m_list.end() ; it++) {
+        if ((*it)->m_job_id > job->m_job_id) break;
+    }
+    m_list.insert(it, job);
+}
+
 JobsCommand::JobsCommand(const char* cmd_line): BuiltInCommand(cmd_line){}
 
 void JobsCommand::execute() {

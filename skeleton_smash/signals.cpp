@@ -2,6 +2,7 @@
 #include <signal.h>
 #include "signals.h"
 #include "Commands.h"
+#include "assert.h"
 #ifndef RUN_LOCAL
 #include <sys/wait.h>
 #endif
@@ -21,7 +22,13 @@ void ctrlZHandler(int sig_num) {
     #endif
     SmallShell::getInstance().setFgJob(NULL);
     fg_job_ptr->m_state = STOPPED;
-    SmallShell::getInstance().getMJobList().addNewJob(fg_job_ptr);
+    if (fg_job_ptr->m_job_id == -1) {
+        SmallShell::getInstance().getMJobList().addNewJob(fg_job_ptr);
+    }
+    else {
+        assert (fg_job_ptr->m_job_id > 0);
+        SmallShell::getInstance().getMJobList().addOldJob(fg_job_ptr);
+    }
     cout << "smash: process " << fg_job_ptr->m_pid << " was stopped" << endl;
 }
 
