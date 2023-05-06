@@ -52,7 +52,7 @@ const std::string WHITESPACE = " \n\r\t\f\v";
 #define IN_FD_INDEX 0
 #define OUT_FD_INDEX 1
 #define ERR_FD_INDEX 2
-#define FULL_PERMISSIONS 777
+#define FULL_PERMISSIONS 7777
 
 
 string _ltrim(const std::string& s)
@@ -1008,9 +1008,10 @@ void GetFileTypeCommand::execute() {
 ChmodCommand::ChmodCommand(const char *cmd_line): BuiltInCommand(cmd_line) {}
 
 void ChmodCommand::execute() {
-    if (m_cmd_line[1] == NULL || m_cmd_line[ANOTHER_ARGS] == NULL || m_cmd_line[ANOTHER_ARGS + 1] != NULL
-         || !_isNum(m_cmd_line[1]) || _isNum(m_cmd_line[1]) && stoi(m_cmd_line[1]) < 0
-         /*|| _isNum(m_cmd_line[1]) && stoi(m_cmd_line[1]) > FULL_PERMISSIONS*/) {
+    if (m_cmd_line[1] == NULL || !_isNum(m_cmd_line[1])
+        || m_cmd_line[ANOTHER_ARGS] == NULL || m_cmd_line[ANOTHER_ARGS + 1] != NULL
+        || _isNum(m_cmd_line[1]) && stoi(m_cmd_line[1]) < 0
+        || _isNum(m_cmd_line[1]) && stoi(m_cmd_line[1]) > FULL_PERMISSIONS) {
         cerr << "smash error: chmod: invalid arguments" << endl;
         return;
     }
