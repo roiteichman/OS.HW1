@@ -513,9 +513,6 @@ void ChangeDirCommand::execute() {
         SmallShell::getInstance().setMPLastPwd(old_pwd);
     }
 
-
-
-
 }
 
 /*
