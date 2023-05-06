@@ -1022,14 +1022,9 @@ void ChmodCommand::execute() {
     int tens_digit = m_cmd_line[1][1]-'0';
     int unity_digit = m_cmd_line[1][2]-'0';
 
-    cout << "hundreds_digit is:" << hundreds_digit << endl;
-    cout << "tens_digit is:" << tens_digit << endl;
-    cout << "unity_digit is:" << unity_digit << endl;
-
     numInOctal += unity_digit;
     numInOctal += tens_digit*OCTAL_BASE;
     numInOctal += hundreds_digit*(OCTAL_BASE*OCTAL_BASE);
-
 
     int res = chmod(m_cmd_line[ANOTHER_ARGS], numInOctal);
 
