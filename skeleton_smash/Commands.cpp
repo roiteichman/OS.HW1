@@ -157,13 +157,13 @@ SmallShell methods:
 --------------------*/
 
 SmallShell::SmallShell() :
-    m_fg_job(NULL), m_finish(false) {
+    m_fg_job(NULL), m_finish(false), m_did_first_cd(false) {
     strcpy(m_prompt, "smash");
     char buff[COMMAND_ARGS_MAX_LENGTH] = {0};
     char* res = getcwd(buff, COMMAND_ARGS_MAX_LENGTH);
-    if (res == NULL) perror ("smash error: getcwd failed");
-
-    strcpy(m_p_currPWD, buff);
+    if (res == NULL){
+        perror ("smash error: getcwd failed");
+    }
     strcpy(m_p_lastPWD, buff);
 }
 
@@ -208,11 +208,7 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     }
     //TODO: cd& + second word is NULL
     else if (firstWord.compare("cd") == 0 || firstWord.compare("cd&") == 0) {
-        char lastPWD[COMMAND_ARGS_MAX_LENGTH]={0};
-        strcpy(lastPWD, SmallShell::getInstance().getMPLastPwd());
-        char * p_lastPwd[COMMAND_ARGS_MAX_LENGTH];
-        p_lastPwd[1]=lastPWD;
-        return new ChangeDirCommand(cmd_line, p_lastPwd);
+        return new ChangeDirCommand(cmd_line);
     }
     else if (firstWord.compare("jobs") == 0 || firstWord.compare("jobs&") == 0) {
         return new JobsCommand(cmd_line);
@@ -279,17 +275,9 @@ void SmallShell::setMPLastPwd(char *lastPwd) {
     strcpy(m_p_lastPWD, lastPwd);
 }
 
-void SmallShell::setMPCurrPwd() {
-    char *res = getcwd(m_p_currPWD, DIR_MAX_LEN);
-    if (res == NULL) perror("smash error: getcwd failed");
-}
 
 const char *SmallShell::getMPLastPwd() const {
     return m_p_lastPWD;
-}
-
-const char* SmallShell::getMPCurrPwd() const {
-    return m_p_currPWD;
 }
 
 JobsList &SmallShell::getMJobList(){
@@ -311,6 +299,14 @@ void SmallShell::setMFinish(bool mFinish) {
 
 bool SmallShell::isMFinish() const {
     return m_finish;
+}
+
+bool SmallShell::isMDidFirstCd() const {
+    return m_did_first_cd;
+}
+
+void SmallShell::setMDidFirstCd(bool mDidFirstCd) {
+    m_did_first_cd = mDidFirstCd;
 }
 
 
@@ -475,41 +471,51 @@ void GetCurrDirCommand::execute() {
 }
 
 
-ChangeDirCommand::ChangeDirCommand(const char* cmd_line, char** plastPwd): BuiltInCommand(cmd_line){
-    strcpy(m_plastPwd, plastPwd[1]);
+ChangeDirCommand::ChangeDirCommand(const char* cmd_line): BuiltInCommand(cmd_line){
 }
 
 void ChangeDirCommand::execute() {
-        //TODO cd twice to same dir, and then cd -
 
-        char asked_path[COMMAND_ARGS_MAX_LENGTH];
-        char curr_pwd[COMMAND_ARGS_MAX_LENGTH];
-        char old_pwd[COMMAND_ARGS_MAX_LENGTH];
-        strcpy(asked_path, getMCmdLine()[1]);
-        strcpy(curr_pwd, SmallShell::getInstance().getMPCurrPwd());
-        strcpy(old_pwd, SmallShell::getInstance().getMPLastPwd());
+    //TODO cd twice to same dir, and then cd -
 
-        char *another_args = BuiltInCommand::getMCmdLine()[ANOTHER_ARGS];
-        if (another_args) {
-            perror("smash error: cd: too many arguments");
-        }
-
-        else if (strcmp(asked_path, "-") == 0){
-        if (strcmp(old_pwd, curr_pwd) == 0){
-            perror("smash error: cd: OLDPWD not set");
-        }
-        strcpy(asked_path, old_pwd);
+    if (m_cmd_line[1] == NULL ||  strcmp(m_cmd_line[1], "-") && m_cmd_line[ANOTHER_ARGS] != NULL
+        || m_cmd_line[1] != NULL && m_cmd_line[ANOTHER_ARGS] != NULL ){
+        cerr << "smash error: cd: invalid arguments" << endl;
+        return;
     }
 
 
+    char asked_path[COMMAND_ARGS_MAX_LENGTH];
+    char old_pwd[COMMAND_ARGS_MAX_LENGTH];
+    strcpy(asked_path, m_cmd_line[1]);
+    strcpy(old_pwd, SmallShell::getInstance().getMPLastPwd());
 
-    if (chdir(asked_path) != 0){
+
+    if (strcmp(asked_path, "-") == 0){
+        if (!SmallShell::getInstance().isMDidFirstCd()){
+            cerr << "smash error: cd: OLDPWD not set"<< endl;
+            return;
+        }
+        else{
+            // mean there was at least one cd command
+            strcpy(asked_path, old_pwd);
+        }
+    }
+
+    int res = chdir(asked_path);
+    if (res != 0){
         perror("smash error: cd failed");
+        return;
     }
     else{
-        SmallShell::getInstance().setMPCurrPwd();
-        SmallShell::getInstance().setMPLastPwd(curr_pwd);
+        //means cd succeed
+        SmallShell::getInstance().setMDidFirstCd(true);
+        SmallShell::getInstance().setMPLastPwd(old_pwd);
     }
+
+
+
+
 }
 
 /*

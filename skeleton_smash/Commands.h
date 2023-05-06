@@ -81,9 +81,8 @@ class ChangePrompt : public BuiltInCommand{
 
 class ChangeDirCommand : public BuiltInCommand {
 // TODO: Add your data members public:
-  char m_plastPwd[COMMAND_ARGS_MAX_LENGTH];
 public:
-  ChangeDirCommand(const char* cmd_line, char** plastPwd);
+  ChangeDirCommand(const char* cmd_line);
   virtual ~ChangeDirCommand() = default;
   void execute() override;
 };
@@ -222,7 +221,7 @@ class SmallShell {
   // TODO: Add your data members
   char m_prompt[COMMAND_MAX_CHARACTERS];
   char m_p_lastPWD[COMMAND_ARGS_MAX_LENGTH];
-  char m_p_currPWD[COMMAND_ARGS_MAX_LENGTH];
+  bool m_did_first_cd;
   JobsList m_job_list;
   Job* m_fg_job;
   bool m_finish;
@@ -243,11 +242,11 @@ class SmallShell {
   void executeCommand(const char* cmd_line);
 
     const char *getMPLastPwd() const;
-
-    const char *getMPCurrPwd() const;
-
     void setMPLastPwd(char* lastPwd);
-  void setMPCurrPwd();
+
+    bool isMDidFirstCd() const;
+
+    void setMDidFirstCd(bool mDidFirstCd);
 
     void setMFinish(bool mFinish);
 
