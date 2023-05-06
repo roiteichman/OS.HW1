@@ -53,6 +53,7 @@ const std::string WHITESPACE = " \n\r\t\f\v";
 #define OUT_FD_INDEX 1
 #define ERR_FD_INDEX 2
 #define FULL_PERMISSIONS 777
+#define OCTAL_BASE 8
 
 
 string _ltrim(const std::string& s)
@@ -1015,7 +1016,22 @@ void ChmodCommand::execute() {
         cerr << "smash error: chmod: invalid arguments" << endl;
         return;
     }
-    int res = chmod(m_cmd_line[ANOTHER_ARGS], stoi(m_cmd_line[1]));
+
+    int numInOctal = 0;
+    int hundreds_digit = m_cmd_line[1][0]-'0';
+    int tens_digit = m_cmd_line[1][1]-'0';
+    int unity_digit = m_cmd_line[1][2]-'0';
+
+    cout << "hundreds_digit is:" << hundreds_digit << endl;
+    cout << "tens_digit is:" << tens_digit << endl;
+    cout << "unity_digit is:" << unity_digit << endl;
+
+    numInOctal += unity_digit;
+    numInOctal += tens_digit*OCTAL_BASE;
+    numInOctal += hundreds_digit*(OCTAL_BASE*OCTAL_BASE);
+
+
+    int res = chmod(m_cmd_line[ANOTHER_ARGS], numInOctal);
 
     if (res == -1){
         perror("smash error: chmod failed");
