@@ -189,7 +189,7 @@ class ChmodCommand : public BuiltInCommand {
   // TODO: Add your data members
  public:
   ChmodCommand(const char* cmd_line);
-  virtual ~ChmodCommand() {}
+  virtual ~ChmodCommand() = default;
   void execute() override;
 };
 
