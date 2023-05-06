@@ -1016,6 +1016,8 @@ void ChmodCommand::execute() {
     }
     int res = chmod(m_cmd_line[ANOTHER_ARGS], stoi(m_cmd_line[1]));
 
+    cout << stoi(m_cmd_line[1]) << endl;
+
     if (res == -1){
         perror("smash error: chmod failed");
     }
