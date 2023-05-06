@@ -52,7 +52,7 @@ const std::string WHITESPACE = " \n\r\t\f\v";
 #define IN_FD_INDEX 0
 #define OUT_FD_INDEX 1
 #define ERR_FD_INDEX 2
-#define FULL_PERMISSIONS 7777
+#define FULL_PERMISSIONS 777
 
 
 string _ltrim(const std::string& s)
@@ -1016,8 +1016,6 @@ void ChmodCommand::execute() {
         return;
     }
     int res = chmod(m_cmd_line[ANOTHER_ARGS], stoi(m_cmd_line[1]));
-
-    cout << stoi(m_cmd_line[1]) << endl;
 
     if (res == -1){
         perror("smash error: chmod failed");
