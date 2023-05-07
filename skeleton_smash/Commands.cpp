@@ -52,6 +52,8 @@ const std::string WHITESPACE = " \n\r\t\f\v";
 #define IN_FD_INDEX 0
 #define OUT_FD_INDEX 1
 #define ERR_FD_INDEX 2
+#define FULL_PERMISSIONS 777
+#define OCTAL_BASE 8
 
 
 string _ltrim(const std::string& s)
@@ -155,13 +157,13 @@ SmallShell methods:
 --------------------*/
 
 SmallShell::SmallShell() :
-    m_fg_job(NULL), m_finish(false) {
+    m_fg_job(NULL), m_finish(false), m_did_first_cd(false) {
     strcpy(m_prompt, "smash");
     char buff[COMMAND_ARGS_MAX_LENGTH] = {0};
     char* res = getcwd(buff, COMMAND_ARGS_MAX_LENGTH);
-    if (res == NULL) perror ("smash error: getcwd failed");
-
-    strcpy(m_p_currPWD, buff);
+    if (res == NULL){
+        perror ("smash error: getcwd failed");
+    }
     strcpy(m_p_lastPWD, buff);
 }
 
@@ -189,7 +191,10 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
 
     if (_isRedirection(cmd_line) >= 0) {
-        return new RedirectionCommand(cmd_line, _isRedirection(cmd_line));
+        char temp[COMMAND_MAX_CHARACTERS] = {0};
+        strcpy(temp, cmd_line);
+        _removeBackgroundSign(temp);
+        return new RedirectionCommand(temp, _isRedirection(cmd_line));
     }
     else if (_isPipe(cmd_line) >= 0) {
         return new PipeCommand(cmd_line, _isPipe(cmd_line));
@@ -206,11 +211,7 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     }
     //TODO: cd& + second word is NULL
     else if (firstWord.compare("cd") == 0 || firstWord.compare("cd&") == 0) {
-        char lastPWD[COMMAND_ARGS_MAX_LENGTH]={0};
-        strcpy(lastPWD, SmallShell::getInstance().getMPLastPwd());
-        char * p_lastPwd[COMMAND_ARGS_MAX_LENGTH];
-        p_lastPwd[1]=lastPWD;
-        return new ChangeDirCommand(cmd_line, p_lastPwd);
+        return new ChangeDirCommand(cmd_line);
     }
     else if (firstWord.compare("jobs") == 0 || firstWord.compare("jobs&") == 0) {
         return new JobsCommand(cmd_line);
@@ -232,6 +233,9 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     }
     else if (firstWord.compare("getfiletype") == 0 || firstWord.compare("getfiletype&") == 0) {
         return new GetFileTypeCommand(cmd_line);
+    }
+    else if (firstWord.compare("chmod") == 0 || firstWord.compare("chmod&") == 0) {
+        return new ChmodCommand(cmd_line);
     }
     else {
         return new ExternalCommand(cmd_line);
@@ -274,17 +278,9 @@ void SmallShell::setMPLastPwd(char *lastPwd) {
     strcpy(m_p_lastPWD, lastPwd);
 }
 
-void SmallShell::setMPCurrPwd() {
-    char *res = getcwd(m_p_currPWD, DIR_MAX_LEN);
-    if (res == NULL) perror("smash error: getcwd failed");
-}
 
 const char *SmallShell::getMPLastPwd() const {
     return m_p_lastPWD;
-}
-
-const char* SmallShell::getMPCurrPwd() const {
-    return m_p_currPWD;
 }
 
 JobsList &SmallShell::getMJobList(){
@@ -306,6 +302,14 @@ void SmallShell::setMFinish(bool mFinish) {
 
 bool SmallShell::isMFinish() const {
     return m_finish;
+}
+
+bool SmallShell::isMDidFirstCd() const {
+    return m_did_first_cd;
+}
+
+void SmallShell::setMDidFirstCd(bool mDidFirstCd) {
+    m_did_first_cd = mDidFirstCd;
 }
 
 
@@ -470,41 +474,48 @@ void GetCurrDirCommand::execute() {
 }
 
 
-ChangeDirCommand::ChangeDirCommand(const char* cmd_line, char** plastPwd): BuiltInCommand(cmd_line){
-    strcpy(m_plastPwd, plastPwd[1]);
+ChangeDirCommand::ChangeDirCommand(const char* cmd_line): BuiltInCommand(cmd_line){
 }
 
 void ChangeDirCommand::execute() {
-        //TODO cd twice to same dir, and then cd -
 
-        char asked_path[COMMAND_ARGS_MAX_LENGTH];
-        char curr_pwd[COMMAND_ARGS_MAX_LENGTH];
-        char old_pwd[COMMAND_ARGS_MAX_LENGTH];
-        strcpy(asked_path, getMCmdLine()[1]);
-        strcpy(curr_pwd, SmallShell::getInstance().getMPCurrPwd());
-        strcpy(old_pwd, SmallShell::getInstance().getMPLastPwd());
+    //TODO cd twice to same dir, and then cd -
 
-        char *another_args = BuiltInCommand::getMCmdLine()[ANOTHER_ARGS];
-        if (another_args) {
-            perror("smash error: cd: too many arguments");
-        }
-
-        else if (strcmp(asked_path, "-") == 0){
-        if (strcmp(old_pwd, curr_pwd) == 0){
-            perror("smash error: cd: OLDPWD not set");
-        }
-        strcpy(asked_path, old_pwd);
+    if (m_cmd_line[1] == NULL ||  strcmp(m_cmd_line[1], "-") && m_cmd_line[ANOTHER_ARGS] != NULL
+        || m_cmd_line[1] != NULL && m_cmd_line[ANOTHER_ARGS] != NULL ){
+        cerr << "smash error: cd: invalid arguments" << endl;
+        return;
     }
 
 
+    char asked_path[COMMAND_ARGS_MAX_LENGTH];
+    char old_pwd[COMMAND_ARGS_MAX_LENGTH];
+    strcpy(asked_path, m_cmd_line[1]);
+    strcpy(old_pwd, SmallShell::getInstance().getMPLastPwd());
 
-    if (chdir(asked_path) != 0){
+
+    if (strcmp(asked_path, "-") == 0){
+        if (!SmallShell::getInstance().isMDidFirstCd()){
+            cerr << "smash error: cd: OLDPWD not set"<< endl;
+            return;
+        }
+        else{
+            // mean there was at least one cd command
+            strcpy(asked_path, old_pwd);
+        }
+    }
+
+    int res = chdir(asked_path);
+    if (res != 0){
         perror("smash error: cd failed");
+        return;
     }
     else{
-        SmallShell::getInstance().setMPCurrPwd();
-        SmallShell::getInstance().setMPLastPwd(curr_pwd);
+        //means cd succeed
+        SmallShell::getInstance().setMDidFirstCd(true);
+        SmallShell::getInstance().setMPLastPwd(old_pwd);
     }
+
 }
 
 /*
@@ -519,6 +530,7 @@ RedirectionCommand::RedirectionCommand(const char *cmd_line, int separate): Comm
     char temp_cmd[COMMAND_MAX_CHARACTERS];
     strcpy(temp_cmd,cmd_line);
     temp_cmd[separate]='\0';
+    _removeBackgroundSign(temp_cmd);
     m_cmd = SmallShell::getInstance().CreateCommand(temp_cmd);
 }
 
@@ -558,6 +570,8 @@ m_error(cmd_line[separate+1]=='&'), m_read_cmd(NULL), m_write_cmd(NULL){
     char temp_cmd[COMMAND_MAX_CHARACTERS];
     strcpy(temp_cmd,cmd_line);
     temp_cmd[separate]='\0';
+    _removeBackgroundSign(temp_cmd);
+    _removeBackgroundSign(temp_cmd+separate+separate_len);
     m_write_cmd = SmallShell::getInstance().CreateCommand(temp_cmd);
     m_read_cmd = SmallShell::getInstance().CreateCommand(temp_cmd+separate+separate_len);
 }
@@ -965,6 +979,7 @@ void SetcoreCommand::execute() {
         cerr << "smash error: setcore: job-id " << job_id << " does not exist" << endl;
         return;
     }
+#ifndef RUN_LOCAL
     if (core_num < 0 || core_num >= get_nprocs_conf()) {
         cerr << "smash error: setcore: invalid core number" << endl;
         return;
@@ -976,6 +991,7 @@ void SetcoreCommand::execute() {
     if (res == -1){
         perror("smash error: sched_setaffinity failed");
     }
+#endif
 }
 
 GetFileTypeCommand::GetFileTypeCommand(const char *cmd_line): BuiltInCommand(cmd_line) {}
@@ -987,8 +1003,10 @@ void printType (const struct stat& sb) {
         case S_IFCHR:  cout << "character device";          break;
         case S_IFBLK:  cout << "block device";              break;
         case S_IFIFO:  cout << "FIFO";                      break;
+#ifndef RUN_LOCAL
         case S_IFLNK:  cout << "symbolic link";             break;
         case S_IFSOCK: cout << "socket";                    break;
+#endif
         default:       cout << "unknown?\n";                break;
     }
 }
@@ -1011,4 +1029,29 @@ void GetFileTypeCommand::execute() {
     cout << "\" and takes up " << sb.st_size << " bytes" << endl;
 }
 
+ChmodCommand::ChmodCommand(const char *cmd_line): BuiltInCommand(cmd_line) {}
 
+void ChmodCommand::execute() {
+    if (m_cmd_line[1] == NULL || !_isNum(m_cmd_line[1])
+        || m_cmd_line[ANOTHER_ARGS] == NULL || m_cmd_line[ANOTHER_ARGS + 1] != NULL
+        || _isNum(m_cmd_line[1]) && stoi(m_cmd_line[1]) < 0
+        || _isNum(m_cmd_line[1]) && stoi(m_cmd_line[1]) > FULL_PERMISSIONS) {
+        cerr << "smash error: chmod: invalid arguments" << endl;
+        return;
+    }
+
+    int numInOctal = 0;
+    int hundreds_digit = m_cmd_line[1][0]-'0';
+    int tens_digit = m_cmd_line[1][1]-'0';
+    int unity_digit = m_cmd_line[1][2]-'0';
+
+    numInOctal += unity_digit;
+    numInOctal += tens_digit*OCTAL_BASE;
+    numInOctal += hundreds_digit*(OCTAL_BASE*OCTAL_BASE);
+
+    int res = chmod(m_cmd_line[ANOTHER_ARGS], numInOctal);
+
+    if (res == -1){
+        perror("smash error: chmod failed");
+    }
+}
