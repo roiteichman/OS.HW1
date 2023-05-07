@@ -14,8 +14,11 @@ void AlarmList::addProcess(Job* job, unsigned int time) {
 #ifndef RUN_LOCAL
     if (time == 0) {
         cout << "smash: got an alarm" << endl;
+        int res = kill(job->m_pid, SIGKILL);
+        if (res == -1){
+            perror ("smash error: kill failed");
+        }
         cout << "smash: " << m_list.begin()->m_job->m_full_cmd_line << " timed out!" << endl;
-        kill(job->m_pid, SIGKILL);
         return;
     }
     unsigned int next_alarm = alarm(0);
@@ -54,7 +57,10 @@ void AlarmList::removeAlarmedProcess() {
         if (m_list.begin()->m_time > 0){
             break;
         }
-        kill(m_list.begin()->m_job->m_pid, SIGKILL);
+        int res = kill(m_list.begin()->m_job->m_pid, SIGKILL);
+        if (res == -1){
+            perror ("smash error: kill failed");
+        }
         cout << "smash: " << m_list.begin()->m_job->m_full_cmd_line << " timed out!" << endl;
         m_list.pop_front();
     }
