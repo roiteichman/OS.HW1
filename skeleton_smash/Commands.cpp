@@ -656,6 +656,9 @@ void Job::print2() const {
     cout << this->m_full_cmd_line << " : " << m_pid << endl;
 }
 
+void Job::print3() const {
+    cout << this->m_pid << ": " << this->m_full_cmd_line << endl;
+}
 
 /*--------------------
 JobsList class:
@@ -693,15 +696,26 @@ void JobsList::addOldJob (Job* job) {
 JobsCommand::JobsCommand(const char* cmd_line): BuiltInCommand(cmd_line){}
 
 void JobsCommand::execute() {
-    SmallShell::getInstance().getMJobList().printJobsList();
+    SmallShell::getInstance().getMJobList().printJobsListForJobsCommand();
 }
 
 
-void JobsList::printJobsList() {
+void JobsList::printJobsListForJobsCommand() {
     this->removeFinishedJobs();
     for (Job* job: m_list) {
         cout << *job << endl;
     }
+}
+
+Job *JobsList::popMinPid() {
+    Job* min_pid = m_list.front();
+    for (Job* job: m_list) {
+        if (job->m_pid < min_pid->m_pid){
+            min_pid = job;
+        }
+    }
+    m_list.remove(min_pid);
+    return min_pid;
 }
 
 void JobsList::removeFinishedJobs() {
@@ -793,11 +807,18 @@ QuitCommand::QuitCommand(const char* cmd_line): BuiltInCommand(cmd_line),
 void QuitCommand::execute() {
     if (m_kill){
         /// TODO: what should we do if there is no jobs? still print?
-        cout << "smash: sending SIGKILL signal to "<< SmallShell::getInstance().getMJobList().getSize() << " jobs:" << endl;
+        int size = SmallShell::getInstance().getMJobList().getSize();
 
-        ///TODO: change the print format + add fg job to kill and print (amount+1(if fg exist))
-        SmallShell::getInstance().getMJobList().printJobsList();
+        cout << "smash: sending SIGKILL signal to "<< size << " jobs:" << endl;
+
         SmallShell::getInstance().getMJobList().killAllJobs();
+
+        while (size){
+        Job* job = SmallShell::getInstance().getMJobList().popMinPid();
+        job->print3();
+        size--;
+        }
+        assert(SmallShell::getInstance().getMJobList().getSize());
     }
     SmallShell::getInstance().setMFinish(true);
 }

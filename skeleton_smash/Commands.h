@@ -126,6 +126,7 @@ struct Job{
     void operator=(Job const&) = delete;
     friend std::ostream& operator<<(std::ostream& os, const Job& job);
     void print2() const;
+    void print3() const;
 };
 
 
@@ -141,7 +142,7 @@ public:
   ~JobsList();
   int addNewJob(Job* job);
   void addOldJob (Job* job);
-  void printJobsList();
+  void printJobsListForJobsCommand();
   void killAllJobs();
   void removeFinishedJobs();
   Job* getJobById(int jobId);
@@ -149,6 +150,9 @@ public:
   Job* getLastJob();
   int getSize() const;
   Job* getLastStoppedJob();
+  Job* popMinPid();
+
+  //TODO: delete the Jobs by hand
   // TODO: Add extra methods or modify exisitng ones as needed
 };
 
