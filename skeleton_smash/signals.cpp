@@ -26,8 +26,8 @@ void AlarmList::addProcess(Job* job, unsigned int time) {
     }
     if (time < next_alarm) {
         m_list.begin()->m_time = next_alarm-time;
-        m_list.push_front(TimeOutProcess(job, time));
-        cout << "alarm in: " << time << " secs" << endl;
+        m_list.push_front(TimeOutProcess(job, 0));
+        //cout << "alarm in: " << time << " secs" << endl;
         alarm (time);
         return;
     }
