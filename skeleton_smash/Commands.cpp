@@ -818,7 +818,7 @@ void QuitCommand::execute() {
         job->print3();
         size--;
         }
-        assert(SmallShell::getInstance().getMJobList().getSize());
+        assert(SmallShell::getInstance().getMJobList().getSize()==0);
     }
     SmallShell::getInstance().setMFinish(true);
 }
