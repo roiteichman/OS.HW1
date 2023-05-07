@@ -1,5 +1,6 @@
 #include <iostream>
 #include <signal.h>
+#include <unistd.h>
 #include "signals.h"
 #include "Commands.h"
 #include "assert.h"
@@ -46,7 +47,7 @@ void AlarmList::removeAlarmedProcess() {
         m_list.pop_front();
     }
     if (m_list.size() > 0) {
-        alarm (m_list.begin()->m_time);
+        alarm(m_list.begin()->m_time);
         m_list.begin()->m_time = 0;
     }
 
