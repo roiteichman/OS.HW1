@@ -9,6 +9,51 @@
 
 using namespace std;
 
+void AlarmList::addProcess(Job* job, unsigned int time) {
+#ifndef RUN_LOCAL
+    if (time == 0) {
+        //TODO
+        return;
+    }
+    unsigned int next_alarm = alarm(0);
+    if (next_alarm == 0) {
+        assert(m_list.size() == 0);
+        m_list.push_back(TimeOutProcess(job, 0));
+        alarm (next_alarm);
+        return;
+    }
+    time -= next_alarm;
+    for (list<TimeOutProcess>::iterator it = m_list.begin(); it != m_list.end(); it++) {
+        if (time < it->m_time) {
+            it->m_time -= time;
+            m_list.insert(it,TimeOutProcess(job, time));
+            return;
+        }
+        else time -= it->m_time;
+    }
+    m_list.push_back(TimeOutProcess(job, time));
+    alarm (next_alarm);
+#endif
+}
+
+void AlarmList::removeAlarmedProcess() {
+    assert(m_list.size() != 0);
+#ifndef RUN_LOCAL
+    while (m_list.size() > 0) {
+        if (m_list.begin()->m_time > 0) break;
+        kill(m_list.begin()->m_job->m_pid, SIGKILL);
+        cout << "smash: " << m_list.begin()->m_job->m_full_cmd_line << " timed out!" << endl;
+        m_list.pop_front();
+    }
+    if (m_list.size() > 0) {
+        alarm (m_list.begin()->m_time);
+        m_list.begin()->m_time = 0;
+    }
+
+#endif
+}
+
+
 void ctrlZHandler(int sig_num) {
     cout << "smash: got ctrl-Z" << endl;
     Job* fg_job_ptr = SmallShell::getInstance().getFgJob();
@@ -48,7 +93,8 @@ void ctrlCHandler(int sig_num) {
 }
 
 void alarmHandler(int sig_num) {
-    // TODO: Add your implementation
+    cout << "smash: got an alarm" << endl;
+    AlarmList::getInstance().removeAlarmedProcess();
 }
 
 

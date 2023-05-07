@@ -3,12 +3,14 @@
 
 #include <vector>
 #include <list>
+#include <assert.h>
 
 #define COMMAND_ARGS_MAX_LENGTH (200)
 #define COMMAND_MAX_ARGS (20)
 #define COMMAND_MAX_CHARACTERS (80)
+#define SIGKILL 9
 
-#define RUN_LOCAL
+//#define RUN_LOCAL
 
 class Command {
 protected:
@@ -17,12 +19,15 @@ protected:
     char* m_cmd_line[COMMAND_MAX_ARGS+1];
     int m_desc_len_in_words;
     char m_full_cmd_line[COMMAND_MAX_CHARACTERS+1];
+    int m_alarm_time;
 public:
   Command(const char* cmd_line);
   virtual ~Command();
   virtual void execute() = 0;
   int setCMDLine_R_BG_s(const char* cmd_line);
   void setMFullCmdLine(const char* cmd_line);
+
+    void setMAlarmTime(int mAlarmTime);
 };
 
 class BuiltInCommand : public Command {

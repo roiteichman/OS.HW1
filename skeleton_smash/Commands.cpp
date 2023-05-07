@@ -17,7 +17,8 @@
 #endif
 #include <unistd.h>
 #include <time.h>
-#include <assert.h>
+#include "signals.h"
+
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -46,7 +47,6 @@ const std::string WHITESPACE = " \n\r\t\f\v";
 #define JUST_PROMPT 1
 #define ANOTHER_ARGS 2
 #define DIR_MAX_LEN 200
-#define SIGKILL 9
 #define LONG_REDIRECTION_SIGN 2
 #define LONG_PIPE_SIGN 2
 #define IN_FD_INDEX 0
@@ -312,7 +312,8 @@ void Command::setMFullCmdLine(const char *cmd_line) {
 
 Command::Command(const char *cmd_line): m_is_back_ground(_isBackgroundComamnd(cmd_line)),
                                         m_is_complex(_isComplexCommand(cmd_line)),
-                                        m_desc_len_in_words(setCMDLine_R_BG_s(cmd_line))
+                                        m_desc_len_in_words(setCMDLine_R_BG_s(cmd_line)),
+                                        m_alarm_time(-1)
 {
     strcpy(m_full_cmd_line, cmd_line);
 }
@@ -321,6 +322,10 @@ Command::~Command() noexcept {
     for (int i = 0; m_cmd_line[i]!=NULL ; ++i) {
         delete[] m_cmd_line[i];
     }
+}
+
+void Command::setMAlarmTime(int mAlarmTime) {
+    m_alarm_time = mAlarmTime;
 }
 
 BuiltInCommand::BuiltInCommand(const char *cmd_line): Command(cmd_line) {}
@@ -357,6 +362,11 @@ void ExternalCommand::execute() {
     }
     else if (pid>0){
         Job* new_job = new Job(-1, pid, FOREGROUND, this->m_full_cmd_line);
+
+        if (m_alarm_time>=0){
+            AlarmList::getInstance().addProcess(new_job, m_alarm_time);
+        }
+
         // foreground
         if (!m_is_back_ground){
             SmallShell::getInstance().setFgJob(new_job);
@@ -1083,5 +1093,7 @@ void TimeoutCommand::execute() {
         cerr << "smash error: timeout: invalid arguments" << endl;
         return;
     }
+    m_cmd->setMAlarmTime(m_sec);
+    m_cmd->execute();
 
 }
