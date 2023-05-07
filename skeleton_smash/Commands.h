@@ -160,11 +160,12 @@ class BackgroundCommand : public BuiltInCommand {
   void execute() override;
 };
 
-class TimeoutCommand : public BuiltInCommand {
 /* Bonus */
+class TimeoutCommand : public BuiltInCommand {
+Command* m_cmd;
  public:
   explicit TimeoutCommand(const char* cmd_line);
-  virtual ~TimeoutCommand() {}
+  virtual ~TimeoutCommand() = default;
   void execute() override;
 };
 

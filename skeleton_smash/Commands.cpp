@@ -233,6 +233,9 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     else if (firstWord.compare("chmod") == 0 || firstWord.compare("chmod&") == 0) {
         return new ChmodCommand(cmd_line);
     }
+    else if (firstWord.compare("timeout") == 0 || firstWord.compare("timeout&") == 0) {
+        return new TimeoutCommand(cmd_line);
+    }
     else {
         return new ExternalCommand(cmd_line);
     }
@@ -1045,4 +1048,24 @@ void ChmodCommand::execute() {
     if (res == -1){
         perror("smash error: chmod failed");
     }
+}
+
+/*
+ * Bonus
+ */
+
+TimeoutCommand::TimeoutCommand(const char *cmd_line):BuiltInCommand(cmd_line) {
+    string cmd;
+    for (int i = 1; m_cmd_line[i] != NULL; i++) {
+        cmd += " ";
+        cmd += m_cmd_line[i];
+    }
+    if (m_is_back_ground){
+        cmd += "&";
+    }
+    m_cmd = SmallShell::getInstance().CreateCommand(cmd.c_str());
+}
+
+void TimeoutCommand::execute() {
+
 }
