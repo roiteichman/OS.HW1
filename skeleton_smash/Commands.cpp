@@ -243,6 +243,9 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
 
 void SmallShell::executeCommand(const char *cmd_line) {
     this->getMJobList().removeFinishedJobs();
+    if (strlen(cmd_line) == 0){
+        return;
+    }
     Command* cmd = CreateCommand(cmd_line);
     cmd->execute();
     delete cmd;
