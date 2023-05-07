@@ -13,7 +13,9 @@ using namespace std;
 void AlarmList::addProcess(Job* job, unsigned int time) {
 #ifndef RUN_LOCAL
     if (time == 0) {
-        //TODO
+        cout << "smash: got an alarm" << endl;
+        cout << "smash: " << m_list.begin()->m_job->m_full_cmd_line << " timed out!" << endl;
+        kill(job->m_pid, SIGKILL);
         return;
     }
     unsigned int next_alarm = alarm(0);
@@ -27,7 +29,6 @@ void AlarmList::addProcess(Job* job, unsigned int time) {
     if (time < next_alarm) {
         m_list.begin()->m_time = next_alarm-time;
         m_list.push_front(TimeOutProcess(job, 0));
-        //cout << "alarm in: " << time << " secs" << endl;
         alarm (time);
         return;
     }
