@@ -46,10 +46,13 @@ void AlarmList::addProcess(Job* job, unsigned int time) {
 }
 
 void AlarmList::removeAlarmedProcess() {
+    cout << "hi" << endl;
     assert(m_list.size() != 0);
 #ifndef RUN_LOCAL
     while (m_list.size() > 0) {
-        if (m_list.begin()->m_time > 0) break;
+        if (m_list.begin()->m_time > 0){
+            break;
+        }
         kill(m_list.begin()->m_job->m_pid, SIGKILL);
         cout << "smash: " << m_list.begin()->m_job->m_full_cmd_line << " timed out!" << endl;
         m_list.pop_front();
