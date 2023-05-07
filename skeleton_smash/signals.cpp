@@ -21,6 +21,7 @@ void AlarmList::addProcess(Job* job, unsigned int time) {
     if (next_alarm == 0) {
         assert(m_list.size() == 0);
         m_list.push_back(TimeOutProcess(job, 0));
+        cout << "alarm in: " << time << " secs" << endl;
         alarm (time);
         return;
     }
@@ -46,7 +47,6 @@ void AlarmList::addProcess(Job* job, unsigned int time) {
 }
 
 void AlarmList::removeAlarmedProcess() {
-    cout << "hi" << endl;
     assert(m_list.size() != 0);
 #ifndef RUN_LOCAL
     while (m_list.size() > 0) {
