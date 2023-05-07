@@ -148,10 +148,6 @@ void cmdForBash (char** cmd_source, char* dest) {
     }
 }
 
-
-
-// TODO: Add your implementation for classes in Commands.h
-
 /*-------------------
 SmallShell methods:
 --------------------*/
@@ -243,35 +239,10 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
 }
 
 void SmallShell::executeCommand(const char *cmd_line) {
-    // TODO: Add your implementation here
-    // for example:
-    // Command* cmd = CreateCommand(cmd_line);
-    // cmd->execute();
-    // Please note that you must fork smash process for some commands (e.g., external commands....)
-
-
     this->getMJobList().removeFinishedJobs();
     Command* cmd = CreateCommand(cmd_line);
     cmd->execute();
     delete cmd;
-
-/*
-    BuiltInCommand* bi_cmd = dynamic_cast<BuiltInCommand*>(cmd);
-    // if the command is Build-In Command, we get a pointer, else we get nullptr
-    if (bi_cmd != nullptr){
-        // if its Build-In command execute them directly
-        bi_cmd->execute();
-    }
-    else{
-        // fork and let your child execute them and wait for him
-        pid_t pid = fork();
-
-        if (pid==0){
-            cmd->execute();
-        }
-        else if (pid>0){
-            wait(NULL);
-        }*/
 }
 
 void SmallShell::setMPLastPwd(char *lastPwd) {
@@ -396,12 +367,8 @@ void ExternalCommand::execute() {
         else{
             new_job->m_state=BACKGROUND;
             int index = SmallShell::getInstance().getMJobList().addNewJob(new_job);
-
-            // TODO: wait
         }
     }
-    // TODO error in fork
-
     else{
         perror ("smash error: fork failed");
     }
@@ -478,8 +445,6 @@ ChangeDirCommand::ChangeDirCommand(const char* cmd_line): BuiltInCommand(cmd_lin
 }
 
 void ChangeDirCommand::execute() {
-
-    //TODO cd twice to same dir, and then cd -
 
     if (m_cmd_line[1] == NULL ||  strcmp(m_cmd_line[1], "-") && m_cmd_line[ANOTHER_ARGS] != NULL
         || m_cmd_line[1] != NULL && m_cmd_line[ANOTHER_ARGS] != NULL ){
@@ -806,7 +771,7 @@ QuitCommand::QuitCommand(const char* cmd_line): BuiltInCommand(cmd_line),
 
 void QuitCommand::execute() {
     if (m_kill){
-        /// TODO: what should we do if there is no jobs? still print?
+
         int size = SmallShell::getInstance().getMJobList().getSize();
 
         cout << "smash: sending SIGKILL signal to "<< size << " jobs:" << endl;
@@ -817,23 +782,31 @@ void QuitCommand::execute() {
         Job* job = SmallShell::getInstance().getMJobList().popMinPid();
         job->print3();
         size--;
+        delete job;
         }
         assert(SmallShell::getInstance().getMJobList().getSize()==0);
     }
     SmallShell::getInstance().setMFinish(true);
 }
 
-bool _isNum (char* c) {
+int _isNum (char* c) {
     if  (*c =='\0'){
-        return false;
+        return 0;
+    }
+    bool sign = false;
+    if (*c == '-') {
+        sign = true;
+        c++;
+        if (*c = '\0'){
+            return 0;
+        }
     }
     for (char* p = c; *p != '\0'; p++) {
         if (*p < '0' || *p > '9'){
-            return false;
+            return 0;
         }
     }
-    return true;
-    //TODO: check negative num?
+    return sign ? -1 : 1;
 }
 
 /*
@@ -843,8 +816,6 @@ bool _isNum (char* c) {
 KillCommand::KillCommand(const char *cmd_line): BuiltInCommand(cmd_line) {}
 
 void KillCommand::execute() {
-
-    // TODO: is needed to change state of job according to the signal
 
     int signal_id;
     int job_id;
@@ -891,7 +862,6 @@ void KillCommand::execute() {
             job_ptr->m_state=BACKGROUND;
         }
     }
-    //TODO - what happend if signal id is out of range
     #endif
 }
 

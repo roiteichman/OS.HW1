@@ -11,7 +11,6 @@
 //#define RUN_LOCAL
 
 class Command {
-    // TODO: Add your data members
 protected:
     bool m_is_back_ground;
     bool m_is_complex;
@@ -20,13 +19,9 @@ protected:
     char m_full_cmd_line[COMMAND_MAX_CHARACTERS+1];
 public:
   Command(const char* cmd_line);
-  virtual ~Command(); // TODO: delete m_cmd_line
+  virtual ~Command();
   virtual void execute() = 0;
   int setCMDLine_R_BG_s(const char* cmd_line);
-  //virtual void prepare();
-  //virtual void cleanup();
-
-  // TODO: Add your extra methods if needed
 };
 
 class BuiltInCommand : public Command {
@@ -47,7 +42,6 @@ public:
 };
 
 class PipeCommand : public Command {
-  // TODO: Add your data members
   Command* m_write_cmd;
   Command* m_read_cmd;
   bool m_error;
@@ -58,7 +52,6 @@ class PipeCommand : public Command {
 };
 
 class RedirectionCommand : public Command {
-    // TODO: Add your data members
     bool m_append;
     Command* m_cmd;
     char m_path[COMMAND_MAX_CHARACTERS];
@@ -80,7 +73,6 @@ class ChangePrompt : public BuiltInCommand{
 };
 
 class ChangeDirCommand : public BuiltInCommand {
-// TODO: Add your data members public:
 public:
   ChangeDirCommand(const char* cmd_line);
   virtual ~ChangeDirCommand() = default;
@@ -103,7 +95,6 @@ class ShowPidCommand : public BuiltInCommand {
 
 class JobsList;
 class QuitCommand : public BuiltInCommand {
-// TODO: Add your data members
   bool m_kill;
 public:
   QuitCommand(const char* cmd_line);
@@ -133,11 +124,6 @@ struct Job{
 class JobsList {
     std::list<Job*> m_list;
 public:
-  class JobEntry {
-   // TODO: Add your data members
-  };
- // TODO: Add your data members
- public:
   JobsList() = default;
   ~JobsList();
   int addNewJob(Job* job);
@@ -151,13 +137,9 @@ public:
   int getSize() const;
   Job* getLastStoppedJob();
   Job* popMinPid();
-
-  //TODO: delete the Jobs by hand
-  // TODO: Add extra methods or modify exisitng ones as needed
 };
 
 class JobsCommand : public BuiltInCommand {
- // TODO: Add your data members
  public:
   JobsCommand(const char* cmd_line);
   virtual ~JobsCommand() = default;
@@ -165,7 +147,6 @@ class JobsCommand : public BuiltInCommand {
 };
 
 class ForegroundCommand : public BuiltInCommand {
- // TODO: Add your data members
  public:
   ForegroundCommand(const char* cmd_line);
   virtual ~ForegroundCommand() {}
@@ -173,7 +154,6 @@ class ForegroundCommand : public BuiltInCommand {
 };
 
 class BackgroundCommand : public BuiltInCommand {
- // TODO: Add your data members
  public:
   BackgroundCommand(const char* cmd_line);
   virtual ~BackgroundCommand() {}
@@ -182,7 +162,6 @@ class BackgroundCommand : public BuiltInCommand {
 
 class TimeoutCommand : public BuiltInCommand {
 /* Bonus */
-// TODO: Add your data members
  public:
   explicit TimeoutCommand(const char* cmd_line);
   virtual ~TimeoutCommand() {}
@@ -190,7 +169,6 @@ class TimeoutCommand : public BuiltInCommand {
 };
 
 class ChmodCommand : public BuiltInCommand {
-  // TODO: Add your data members
  public:
   ChmodCommand(const char* cmd_line);
   virtual ~ChmodCommand() = default;
@@ -198,7 +176,6 @@ class ChmodCommand : public BuiltInCommand {
 };
 
 class GetFileTypeCommand : public BuiltInCommand {
-  // TODO: Add your data members
  public:
   GetFileTypeCommand(const char* cmd_line);
   virtual ~GetFileTypeCommand() = default;
@@ -206,7 +183,6 @@ class GetFileTypeCommand : public BuiltInCommand {
 };
 
 class SetcoreCommand : public BuiltInCommand {
-  // TODO: Add your data members
  public:
   SetcoreCommand(const char* cmd_line);
   virtual ~SetcoreCommand() {}
@@ -214,7 +190,6 @@ class SetcoreCommand : public BuiltInCommand {
 };
 
 class KillCommand : public BuiltInCommand {
- // TODO: Add your data members
  public:
   KillCommand(const char* cmd_line);
   virtual ~KillCommand() = default;
@@ -223,7 +198,6 @@ class KillCommand : public BuiltInCommand {
 
 class SmallShell {
  private:
-  // TODO: Add your data members
   char m_prompt[COMMAND_MAX_CHARACTERS];
   char m_p_lastPWD[COMMAND_ARGS_MAX_LENGTH];
   bool m_did_first_cd;
@@ -261,8 +235,6 @@ class SmallShell {
     void setFgJob(Job* fg_job);
     Job* getFgJob() const;
 
-
-    // TODO: add extra methods as needed
 };
 
 #endif //SMASH_COMMAND_H_

@@ -26,15 +26,11 @@ int main(int argc, char* argv[]) {
     SmallShell& smash = SmallShell::getInstance();
 
 
-    while(true) {
+    while(!smash.isMFinish()) {
         smash.printPrompt();
         std::string cmd_line;
         std::getline(std::cin, cmd_line);
         smash.executeCommand(cmd_line.c_str());
-        if (smash.isMFinish()){
-            break;
-            //exit(EXIT_SUCCESS);
-        }
    }
 
 
