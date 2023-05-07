@@ -18,6 +18,7 @@ void AlarmList::addProcess(Job* job, unsigned int time) {
     }
     unsigned int next_alarm = alarm(0);
 
+        //cout << *job << "; alarm in: " << next_alarm << endl;
     if (next_alarm == 0) {
         assert(m_list.size() == 0);
         m_list.push_back(TimeOutProcess(job, 0));
@@ -25,7 +26,6 @@ void AlarmList::addProcess(Job* job, unsigned int time) {
         return;
     }
     if (time < next_alarm) {
-        cout << *job << "; alarm in: " << next_alarm << endl;
         m_list.begin()->m_time = next_alarm-time;
         m_list.push_front(TimeOutProcess(job, time));
         alarm (time);
@@ -36,6 +36,7 @@ void AlarmList::addProcess(Job* job, unsigned int time) {
         if (time < it->m_time) {
             it->m_time -= time;
             m_list.insert(it,TimeOutProcess(job, time));
+            alarm (next_alarm);
             return;
         }
         else time -= it->m_time;
