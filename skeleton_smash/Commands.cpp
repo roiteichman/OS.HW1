@@ -571,9 +571,6 @@ m_error(cmd_line[separate+1]=='&'), m_read_cmd(NULL), m_write_cmd(NULL){
     strcpy(temp_cmd,cmd_line);
     temp_cmd[separate]='\0';
     _removeBackgroundSign(temp_cmd);
-    //int len = strlen(temp_cmd);
-    //temp_cmd[len] = '&';
-    //temp_cmd[len+1] = '\0';
     _removeBackgroundSign(temp_cmd+separate+separate_len);
     m_write_cmd = SmallShell::getInstance().CreateCommand(temp_cmd);
     m_read_cmd = SmallShell::getInstance().CreateCommand(temp_cmd+separate+separate_len);
