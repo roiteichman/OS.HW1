@@ -18,7 +18,7 @@ void AlarmList::addProcess(Job* job, unsigned int time) {
         if (res == -1){
             perror ("smash error: kill failed");
         }
-        cout << "smash: " << m_list.begin()->m_job->m_full_cmd_line << " timed out!" << endl;
+        cout << "smash: " << job->m_full_cmd_line << " timed out!" << endl;
         return;
     }
     unsigned int next_alarm = alarm(0);
