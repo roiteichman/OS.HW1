@@ -191,7 +191,10 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
 
     if (_isRedirection(cmd_line) >= 0) {
-        return new RedirectionCommand(cmd_line, _isRedirection(cmd_line));
+        char temp[COMMAND_MAX_CHARACTERS] = {0};
+        strcpy(temp, cmd_line);
+        _removeBackgroundSign(temp);
+        return new RedirectionCommand(temp, _isRedirection(cmd_line));
     }
     else if (_isPipe(cmd_line) >= 0) {
         return new PipeCommand(cmd_line, _isPipe(cmd_line));
@@ -568,9 +571,9 @@ m_error(cmd_line[separate+1]=='&'), m_read_cmd(NULL), m_write_cmd(NULL){
     strcpy(temp_cmd,cmd_line);
     temp_cmd[separate]='\0';
     _removeBackgroundSign(temp_cmd);
-    int len = strlen(temp_cmd);
-    temp_cmd[len] = '&';
-    temp_cmd[len+1] = '\0';
+    //int len = strlen(temp_cmd);
+    //temp_cmd[len] = '&';
+    //temp_cmd[len+1] = '\0';
     _removeBackgroundSign(temp_cmd+separate+separate_len);
     m_write_cmd = SmallShell::getInstance().CreateCommand(temp_cmd);
     m_read_cmd = SmallShell::getInstance().CreateCommand(temp_cmd+separate+separate_len);
