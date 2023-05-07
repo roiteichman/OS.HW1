@@ -20,7 +20,13 @@ void AlarmList::addProcess(Job* job, unsigned int time) {
     if (next_alarm == 0) {
         assert(m_list.size() == 0);
         m_list.push_back(TimeOutProcess(job, 0));
-        alarm (next_alarm);
+        alarm (time);
+        return;
+    }
+    if (next_alarm > time) {
+        m_list.begin()->m_time = next_alarm-time;
+        m_list.push_front(TimeOutProcess(job, time));
+        alarm (time);
         return;
     }
     time -= next_alarm;
