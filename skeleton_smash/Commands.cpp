@@ -1011,3 +1011,4 @@ void GetFileTypeCommand::execute() {
     cout << "\" and takes up " << sb.st_size << " bytes" << endl;
 }
 
+
