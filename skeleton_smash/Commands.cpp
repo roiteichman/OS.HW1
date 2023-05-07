@@ -527,6 +527,7 @@ RedirectionCommand::RedirectionCommand(const char *cmd_line, int separate): Comm
     char temp_cmd[COMMAND_MAX_CHARACTERS];
     strcpy(temp_cmd,cmd_line);
     temp_cmd[separate]='\0';
+    _removeBackgroundSign(temp_cmd);
     m_cmd = SmallShell::getInstance().CreateCommand(temp_cmd);
 }
 
@@ -566,6 +567,11 @@ m_error(cmd_line[separate+1]=='&'), m_read_cmd(NULL), m_write_cmd(NULL){
     char temp_cmd[COMMAND_MAX_CHARACTERS];
     strcpy(temp_cmd,cmd_line);
     temp_cmd[separate]='\0';
+    _removeBackgroundSign(temp_cmd);
+    int len = strlen(temp_cmd);
+    temp_cmd[len] = '&';
+    temp_cmd[len+1] = '\0';
+    _removeBackgroundSign(temp_cmd+separate+separate_len);
     m_write_cmd = SmallShell::getInstance().CreateCommand(temp_cmd);
     m_read_cmd = SmallShell::getInstance().CreateCommand(temp_cmd+separate+separate_len);
 }
@@ -963,6 +969,7 @@ void SetcoreCommand::execute() {
         cerr << "smash error: setcore: job-id " << job_id << " does not exist" << endl;
         return;
     }
+#ifndef RUN_LOCAL
     if (core_num < 0 || core_num >= get_nprocs_conf()) {
         cerr << "smash error: setcore: invalid core number" << endl;
         return;
@@ -974,6 +981,7 @@ void SetcoreCommand::execute() {
     if (res == -1){
         perror("smash error: sched_setaffinity failed");
     }
+#endif
 }
 
 GetFileTypeCommand::GetFileTypeCommand(const char *cmd_line): BuiltInCommand(cmd_line) {}
@@ -985,8 +993,10 @@ void printType (const struct stat& sb) {
         case S_IFCHR:  cout << "character device";          break;
         case S_IFBLK:  cout << "block device";              break;
         case S_IFIFO:  cout << "FIFO";                      break;
+#ifndef RUN_LOCAL
         case S_IFLNK:  cout << "symbolic link";             break;
         case S_IFSOCK: cout << "socket";                    break;
+#endif
         default:       cout << "unknown?\n";                break;
     }
 }
