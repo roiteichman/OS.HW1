@@ -8,7 +8,7 @@
 #define COMMAND_MAX_ARGS (20)
 #define COMMAND_MAX_CHARACTERS (80)
 
-//#define RUN_LOCAL
+#define RUN_LOCAL
 
 class Command {
 protected:
@@ -22,6 +22,7 @@ public:
   virtual ~Command();
   virtual void execute() = 0;
   int setCMDLine_R_BG_s(const char* cmd_line);
+  void setMFullCmdLine(const char* cmd_line);
 };
 
 class BuiltInCommand : public Command {
@@ -163,6 +164,7 @@ class BackgroundCommand : public BuiltInCommand {
 /* Bonus */
 class TimeoutCommand : public BuiltInCommand {
 Command* m_cmd;
+int m_sec;
  public:
   explicit TimeoutCommand(const char* cmd_line);
   virtual ~TimeoutCommand() = default;

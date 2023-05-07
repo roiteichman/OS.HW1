@@ -306,6 +306,10 @@ int Command::setCMDLine_R_BG_s(const char *cmd_line) {
     return _parseCommandLine(cmd_line_non_const, m_cmd_line);
 }
 
+void Command::setMFullCmdLine(const char *cmd_line) {
+    strcpy(m_full_cmd_line, cmd_line);
+}
+
 Command::Command(const char *cmd_line): m_is_back_ground(_isBackgroundComamnd(cmd_line)),
                                         m_is_complex(_isComplexCommand(cmd_line)),
                                         m_desc_len_in_words(setCMDLine_R_BG_s(cmd_line))
@@ -1054,9 +1058,16 @@ void ChmodCommand::execute() {
  * Bonus
  */
 
-TimeoutCommand::TimeoutCommand(const char *cmd_line):BuiltInCommand(cmd_line) {
+TimeoutCommand::TimeoutCommand(const char *cmd_line):BuiltInCommand(cmd_line), m_cmd(NULL), m_sec(-1) {
+    if(_isNum(m_cmd_line[1])){
+        m_sec=stoi(string(m_cmd_line[1]));
+    }
+    if (m_cmd_line[ANOTHER_ARGS] == NULL){
+        return;
+    }
+
     string cmd;
-    for (int i = 1; m_cmd_line[i] != NULL; i++) {
+    for (int i = ANOTHER_ARGS; m_cmd_line[i] != NULL; i++) {
         cmd += " ";
         cmd += m_cmd_line[i];
     }
@@ -1064,8 +1075,13 @@ TimeoutCommand::TimeoutCommand(const char *cmd_line):BuiltInCommand(cmd_line) {
         cmd += "&";
     }
     m_cmd = SmallShell::getInstance().CreateCommand(cmd.c_str());
+    m_cmd->setMFullCmdLine(this->m_full_cmd_line);
 }
 
 void TimeoutCommand::execute() {
+    if (m_sec < 0 || m_cmd == NULL){
+        cerr << "smash error: timeout: invalid arguments" << endl;
+        return;
+    }
 
 }
