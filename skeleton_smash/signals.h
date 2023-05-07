@@ -13,9 +13,9 @@ void alarmHandler(int sig_num);
 class AlarmList {
     struct TimeOutProcess;
     list<TimeOutProcess> m_list;
-    AlarmList();
+    AlarmList()                     = default;
 public:
-    ~AlarmList() = default;
+    ~AlarmList()                    = default;
     AlarmList(AlarmList const&)      = delete; // disable copy ctor
     void operator=(AlarmList const&)  = delete; // disable = operator
     static AlarmList& getInstance() // make AlarmList singleton
