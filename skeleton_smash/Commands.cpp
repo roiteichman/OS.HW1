@@ -1102,8 +1102,8 @@ void TimeoutCommand::execute() {
     m_cmd->setMAlarmTime(m_sec);
 
     ExternalCommand* tmp = dynamic_cast<ExternalCommand*>(m_cmd);
-    if (m_cmd == nullptr){
-     // Build_In Command
+    if (tmp == nullptr){
+        // Build_In Command
         AlarmList::getInstance().addProcess(m_full_cmd_line, -1, m_sec);
         // TODO we need this?:
         //if (m_sec == 0) {
