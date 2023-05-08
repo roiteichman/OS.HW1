@@ -187,7 +187,6 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
         return NULL;
     }
     string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
-
     if (_isRedirection(cmd_line) >= 0) {
         char temp[COMMAND_MAX_CHARACTERS] = {0};
         strcpy(temp, cmd_line);
@@ -197,45 +196,45 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     else if (_isPipe(cmd_line) >= 0) {
         return new PipeCommand(cmd_line, _isPipe(cmd_line));
     }
-    else if (firstWord.compare("chprompt") == 0 || firstWord.compare("chprompt&") == 0) {
+    else if (firstWord.compare("chprompt") == 0 || _trim(cmd_line).compare("chprompt&") == 0) {
         return new ChangePrompt(cmd_line);
     }
 
-    else if (firstWord.compare("pwd") == 0 || firstWord.compare("pwd&") == 0) {
+    else if (firstWord.compare("pwd") == 0 || _trim(cmd_line).compare("pwd&") == 0) {
         return new GetCurrDirCommand(cmd_line);
     }
-    else if (firstWord.compare("showpid") == 0 || firstWord.compare("showpid&") == 0) {
+    else if (firstWord.compare("showpid") == 0 || _trim(cmd_line).compare("showpid&") == 0) {
         return new ShowPidCommand(cmd_line);
     }
     //TODO: cd& + second word is NULL
-    else if (firstWord.compare("cd") == 0 || firstWord.compare("cd&") == 0) {
+    else if (firstWord.compare("cd") == 0 || _trim(cmd_line).compare("cd&") == 0) {
         return new ChangeDirCommand(cmd_line);
     }
-    else if (firstWord.compare("jobs") == 0 || firstWord.compare("jobs&") == 0) {
+    else if (firstWord.compare("jobs") == 0 || _trim(cmd_line).compare("jobs&") == 0) {
         return new JobsCommand(cmd_line);
     }
-    else if (firstWord.compare("quit") == 0 || firstWord.compare("quit&") == 0) {
+    else if (firstWord.compare("quit") == 0 || _trim(cmd_line).compare("quit&") == 0) {
         return new QuitCommand(cmd_line);
     }
-    else if (firstWord.compare("kill") == 0 || firstWord.compare("kill&") == 0) {
+    else if (firstWord.compare("kill") == 0 || _trim(cmd_line).compare("kill&") == 0) {
         return new KillCommand(cmd_line);
     }
-    else if (firstWord.compare("fg") == 0 || firstWord.compare("fg&") == 0) {
+    else if (firstWord.compare("fg") == 0 || _trim(cmd_line).compare("fg&") == 0) {
         return new ForegroundCommand(cmd_line);
     }
-    else if (firstWord.compare("bg") == 0 || firstWord.compare("bg&") == 0) {
+    else if (firstWord.compare("bg") == 0 || _trim(cmd_line).compare("bg&") == 0) {
         return new BackgroundCommand(cmd_line);
     }
-    else if (firstWord.compare("setcore") == 0 || firstWord.compare("setcore&") == 0) {
+    else if (firstWord.compare("setcore") == 0 || _trim(cmd_line).compare("setcore&") == 0) {
         return new SetcoreCommand(cmd_line);
     }
-    else if (firstWord.compare("getfiletype") == 0 || firstWord.compare("getfiletype&") == 0) {
+    else if (firstWord.compare("getfiletype") == 0 || _trim(cmd_line).compare("getfiletype&") == 0) {
         return new GetFileTypeCommand(cmd_line);
     }
-    else if (firstWord.compare("chmod") == 0 || firstWord.compare("chmod&") == 0) {
+    else if (firstWord.compare("chmod") == 0 || _trim(cmd_line).compare("chmod&") == 0) {
         return new ChmodCommand(cmd_line);
     }
-    else if (firstWord.compare("timeout") == 0 || firstWord.compare("timeout&") == 0) {
+    else if (firstWord.compare("timeout") == 0 || _trim(cmd_line).compare("timeout&") == 0) {
         return new TimeoutCommand(cmd_line);
     }
     else {
@@ -474,12 +473,10 @@ void ChangeDirCommand::execute() {
         return;
     }
 
-
     char asked_path[COMMAND_ARGS_MAX_LENGTH];
     char old_pwd[COMMAND_ARGS_MAX_LENGTH];
     strcpy(asked_path, m_cmd_line[1]);
     strcpy(old_pwd, SmallShell::getInstance().getMPLastPwd());
-
 
     if (strcmp(asked_path, "-") == 0){
         if (!SmallShell::getInstance().isMDidFirstCd()){
@@ -491,6 +488,8 @@ void ChangeDirCommand::execute() {
             strcpy(asked_path, old_pwd);
         }
     }
+    char* res0 = getcwd(old_pwd, DIR_MAX_LEN);
+    if (res0 == NULL) perror ("smash error: getcwd failed");
 
     int res = chdir(asked_path);
     if (res != 0){
