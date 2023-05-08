@@ -184,6 +184,9 @@ void SmallShell::changePrompt(const char *prompt) {
 Command * SmallShell::CreateCommand(const char* cmd_line) {
 
     string cmd_s = _trim(string(cmd_line));
+    if (cmd_s.size() == 0){
+        return NULL;
+    }
     string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
 
     if (_isRedirection(cmd_line) >= 0) {
@@ -243,10 +246,10 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
 
 void SmallShell::executeCommand(const char *cmd_line) {
     this->getMJobList().removeFinishedJobs();
-    if (strlen(cmd_line) == 0){
+    Command* cmd = CreateCommand(cmd_line);
+    if (cmd == NULL){
         return;
     }
-    Command* cmd = CreateCommand(cmd_line);
     cmd->execute();
     delete cmd;
 }
@@ -367,7 +370,7 @@ void ExternalCommand::execute() {
         Job* new_job = new Job(-1, pid, FOREGROUND, this->m_full_cmd_line);
 
         if (m_alarm_time>=0){
-            AlarmList::getInstance().addProcess(new_job, m_alarm_time);
+            AlarmList::getInstance().addProcess(new_job->m_full_cmd_line, new_job->m_pid, m_alarm_time);
         }
 
         // foreground
@@ -375,7 +378,7 @@ void ExternalCommand::execute() {
             SmallShell::getInstance().setFgJob(new_job);
             int res = waitpid(new_job->m_pid ,NULL, WUNTRACED);
 	        if (res == -1){
-                perror("smash error: wait failed");
+                perror("smash error: waitpid failed");
             }
 	        if (new_job->m_state != STOPPED) {
 		        delete new_job; // TODO if the job only stopped
@@ -708,13 +711,14 @@ void JobsList::removeFinishedJobs() {
     std::list<Job*> tmp_list;
     for (Job* job: m_list) {
         pid_t res = waitpid(job->m_pid, NULL, WNOHANG);
-	if (res == -1) perror("smash error: wait failed");
+	    if (res == -1){
+            perror("smash error: waitpid failed");
+        }
         else if (res){
-            //delete job;
-            //m_list.remove(job);
-	    tmp_list.push_back(job);
+            tmp_list.push_back(job);
         }
     }
+
     for (Job* job: tmp_list) {
         delete job;
         m_list.remove(job);
@@ -923,7 +927,7 @@ void ForegroundCommand::execute() {
     }
     int res = waitpid(job_ptr->m_pid, NULL, WUNTRACED);
     if (res == -1){
-        perror("smash error: wait failed");
+        perror("smash error: waitpid failed");
     }
     #endif
     if (job_ptr->m_state != STOPPED) {
@@ -1097,6 +1101,16 @@ void TimeoutCommand::execute() {
         return;
     }
     m_cmd->setMAlarmTime(m_sec);
+
+    ExternalCommand* tmp = dynamic_cast<ExternalCommand*>(m_cmd);
+    if (m_cmd == nullptr){
+     // Build_In Command
+        AlarmList::getInstance().addProcess(m_full_cmd_line, -1, m_sec);
+        // TODO we need this?:
+        //if (m_sec == 0) {
+        //    return;
+        //}
+    }
     m_cmd->execute();
 
 }

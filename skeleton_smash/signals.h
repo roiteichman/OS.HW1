@@ -24,15 +24,18 @@ public:
         // Instantiated on first use.
         return instance;
     }
-    void addProcess(Job* job, unsigned int time);
+    void addProcess(const char* cmd_line, pid_t pid, unsigned int time);
     void removeAlarmedProcess();
 };
 
 struct AlarmList::TimeOutProcess{
-    Job* m_job;
+    char m_cmd_line[COMMAND_MAX_CHARACTERS];
+    pid_t m_pid;
     unsigned int m_time;
-    TimeOutProcess(Job* job, unsigned int time) :
-            m_job(job), m_time(time){};
+    TimeOutProcess(const char* cmd_line, pid_t pid , unsigned int time) : m_pid(pid), m_time(time)
+            {
+                strcpy(m_cmd_line, cmd_line);
+            }
 };
 
 

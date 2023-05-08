@@ -10,28 +10,30 @@
 
 using namespace std;
 
-void AlarmList::addProcess(Job* job, unsigned int time) {
+void AlarmList::addProcess(const char* cmd_line, pid_t pid, unsigned int time) {
 #ifndef RUN_LOCAL
     if (time == 0) {
         cout << "smash: got an alarm" << endl;
-        int res = kill(job->m_pid, SIGKILL);
-        if (res == -1){
-            perror ("smash error: kill failed");
+        if (pid > 0) {
+            int res = kill(pid, SIGKILL);
+            if (res == -1) {
+                perror("smash error: kill failed");
+            }
         }
-        cout << "smash: " << job->m_full_cmd_line << " timed out!" << endl;
+        cout << "smash: " << cmd_line << " timed out!" << endl;
         return;
     }
     unsigned int next_alarm = alarm(0);
 
     if (next_alarm == 0) {
         assert(m_list.size() == 0);
-        m_list.push_back(TimeOutProcess(job, 0));
+        m_list.push_back(TimeOutProcess(cmd_line, pid, 0));
         alarm (time);
         return;
     }
     if (time < next_alarm) {
         m_list.begin()->m_time = next_alarm-time;
-        m_list.push_front(TimeOutProcess(job, 0));
+        m_list.push_front(TimeOutProcess(cmd_line, pid, 0));
         alarm (time);
         return;
     }
@@ -39,13 +41,13 @@ void AlarmList::addProcess(Job* job, unsigned int time) {
     for (list<TimeOutProcess>::iterator it = m_list.begin(); it != m_list.end(); it++) {
         if (time < it->m_time) {
             it->m_time -= time;
-            m_list.insert(it,TimeOutProcess(job, time));
+            m_list.insert(it,TimeOutProcess(cmd_line, pid, time));
             alarm (next_alarm);
             return;
         }
         else time -= it->m_time;
     }
-    m_list.push_back(TimeOutProcess(job, time));
+    m_list.push_back(TimeOutProcess(cmd_line, pid, time));
     alarm (next_alarm);
 #endif
 }
@@ -57,11 +59,14 @@ void AlarmList::removeAlarmedProcess() {
         if (m_list.begin()->m_time > 0){
             break;
         }
-        int res = kill(m_list.begin()->m_job->m_pid, SIGKILL);
-        if (res == -1){
-            perror ("smash error: kill failed");
+        int is_finished = waitpid(m_list.begin()->m_pid, NULL, WNOHANG);
+        if (is_finished == 0 || (is_finished > 0 && waitpid(m_list.begin()->m_pid, NULL, WNOHANG) == 0)) {
+            int res = kill(m_list.begin()->m_pid, SIGKILL);
+            if (res == -1) {
+                perror("smash error: kill failed");
+            }
+            cout << "smash: " << m_list.begin()->m_cmd_line << " timed out!" << endl;
         }
-        cout << "smash: " << m_list.begin()->m_job->m_full_cmd_line << " timed out!" << endl;
         m_list.pop_front();
     }
     if (m_list.size() > 0) {
