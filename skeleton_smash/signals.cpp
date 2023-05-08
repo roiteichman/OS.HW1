@@ -59,8 +59,9 @@ void AlarmList::removeAlarmedProcess() {
         if (m_list.begin()->m_time > 0){
             break;
         }
+        SmallShell::getInstance().getMJobList().removeFinishedJobs();
         int is_finished = waitpid(m_list.begin()->m_pid, NULL, WNOHANG);
-        if (is_finished == 0 || (is_finished > 0 && waitpid(m_list.begin()->m_pid, NULL, WNOHANG) == 0)) {
+        if (is_finished == 0) {
             int res = kill(m_list.begin()->m_pid, SIGKILL);
             if (res == -1) {
                 perror("smash error: kill failed");
