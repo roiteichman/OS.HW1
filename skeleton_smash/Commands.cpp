@@ -185,6 +185,7 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
 
     string cmd_s = _trim(string(cmd_line));
     if (cmd_s.size() == 0){
+        cout << "empty line" << endl;
         return NULL;
     }
     string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
