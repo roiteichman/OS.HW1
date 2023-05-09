@@ -537,7 +537,7 @@ void RedirectionCommand::execute() {
     if (res == -1){
         perror("smash error: close failed");
     }
-    int res2 = open(m_path, m_append ? (O_WRONLY | O_CREAT | O_APPEND | O_TRUNC) : (O_WRONLY | O_CREAT | O_TRUNC), 0666);
+    int res2 = open(m_path, m_append ? (O_WRONLY | O_CREAT | O_APPEND) : (O_WRONLY | O_CREAT | O_TRUNC), 0666);
     if (res2 == -1){
         perror("smash error: open failed");
     }
