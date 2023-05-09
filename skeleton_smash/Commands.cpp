@@ -901,6 +901,7 @@ void KillCommand::execute() {
         perror("smash error: kill failed");
     }
     else{
+        cout << "signal number " << signal_id << " was sent to pid "<< job_ptr->m_pid << endl;
         if (signal_id == SIGSTOP || signal_id == SIGTSTP){
             job_ptr->m_state=STOPPED;
         }
