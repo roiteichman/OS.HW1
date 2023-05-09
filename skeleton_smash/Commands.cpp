@@ -859,10 +859,11 @@ void KillCommand::execute() {
     //get the job_id in int
 
     if (m_cmd_line[1][0]!='-' || !_isNum (m_cmd_line[1]+1) || !_isNum (m_cmd_line[ANOTHER_ARGS])) {
-        cerr << "smash error: fg: invalid arguments" << endl;
+        cerr << "smash error: kill: invalid arguments" << endl;
         return;
     }
     job_id = stoi(string(m_cmd_line[ANOTHER_ARGS]));
+    cout << "hi" << endl;
     job_ptr = SmallShell::getInstance().getMJobList().getJobById(job_id);
     if (job_ptr == NULL) {
         cerr << "smash error: kill: job-id " << job_id << " does not exist" << endl;
