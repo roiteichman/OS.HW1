@@ -83,6 +83,7 @@ int _parseCommandLine(const char* cmd_line, char** args) {
         strcpy(args[i], s.c_str());
         args[++i] = NULL;
     }
+    args[i] = NULL;
     return i;
 
     FUNC_EXIT()
@@ -96,7 +97,7 @@ bool _isBackgroundComamnd(const char* cmd_line) {
 void _removeBackgroundSign(char* cmd_line) {
     const string str(cmd_line);
     // find last character other than spaces
-    unsigned int idx = str.find_last_not_of(WHITESPACE);
+    size_t idx = str.find_last_not_of(WHITESPACE);
     // if all characters are spaces then return
     if (idx == string::npos) {
         return;
@@ -184,8 +185,8 @@ void SmallShell::changePrompt(const char *prompt) {
 Command * SmallShell::CreateCommand(const char* cmd_line) {
 
     string cmd_s = _trim(string(cmd_line));
-    if (cmd_s.size() == 0){
-        return NULL;
+    if (cmd_s.compare("") == 0 || cmd_s.compare("&") == 0){
+        return new NopCommand(cmd_line);
     }
     string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
     if (_isRedirection(cmd_line) >= 0) {
@@ -246,9 +247,6 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
 void SmallShell::executeCommand(const char *cmd_line) {
     this->getMJobList().removeFinishedJobs();
     Command* cmd = CreateCommand(cmd_line);
-    if (cmd == NULL){
-        return;
-    }
     cmd->execute();
     delete cmd;
 }
@@ -324,6 +322,7 @@ Command::Command(const char *cmd_line): m_is_back_ground(_isBackgroundComamnd(cm
 }
 
 Command::~Command() noexcept {
+    //cout << "word: " << m_cmd_line[i] << endl;
     for (int i = 0; m_cmd_line[i]!=NULL ; ++i) {
         delete[] m_cmd_line[i];
     }
@@ -404,6 +403,8 @@ char *const *BuiltInCommand::getMCmdLine() const {
 int BuiltInCommand::getMDescLenInWords() const {
     return m_desc_len_in_words;
 }
+
+NopCommand::NopCommand(const char *cmd_line) : BuiltInCommand(cmd_line) {}
 
 ChangePrompt::ChangePrompt(const char *cmd_line): BuiltInCommand(cmd_line) {}
 
@@ -525,30 +526,44 @@ RedirectionCommand::~RedirectionCommand() noexcept {
     delete m_cmd;
 }
 
+//TODO it is O.K. to return? and do it for pipe command
 void RedirectionCommand::execute() {
     #ifndef RUN_LOCAL
     // copy the fd of the screen so we can return it latter to be in FDT[1]
     int new_screen_fd = dup(1);
     if (new_screen_fd == -1){
         perror("smash error: dup failed");
+        return;
     }
     // close the screen
     int res = close(1);
     if (res == -1){
         perror("smash error: close failed");
+        int res11 = dup2(new_screen_fd, 1);
+        if (res11 == -1){
+            perror("smash error: dup2 failed");
+        }
+        return;
     }
     int res2 = open(m_path, m_append ? (O_WRONLY | O_CREAT | O_APPEND) : (O_WRONLY | O_CREAT | O_TRUNC), 0666);
     if (res2 == -1){
         perror("smash error: open failed");
+        int res11 = dup2(new_screen_fd, 1);
+        if (res11 == -1){
+            perror("smash error: dup2 failed");
+        }
+        return;
     }
     m_cmd->execute();
     int res3 = dup2(new_screen_fd, 1);
     if (res3 == -1){
         perror("smash error: dup2 failed");
+        return;
     }
     int res4 = close(new_screen_fd);
     if (res4 == -1){
         perror("smash error: close failed");
+        return;
     }
     #endif
 }
@@ -576,6 +591,7 @@ void PipeCommand::execute() {
     int res = pipe(my_pipe);
     if (res == -1){
         perror("smash error: pipe failed");
+        //return;
     }
 
     int out = m_error ? ERR_FD_INDEX : OUT_FD_INDEX;

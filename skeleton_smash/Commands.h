@@ -14,7 +14,8 @@
 //#define RUN_LOCAL
 
 class Command {
-protected:
+//protected:
+public:
     bool m_is_back_ground;
     bool m_is_complex;
     char* m_cmd_line[COMMAND_MAX_ARGS+1];
@@ -39,6 +40,13 @@ class BuiltInCommand : public Command {
     int getMDescLenInWords() const;
 
   virtual ~BuiltInCommand() = default;
+};
+
+class NopCommand : public BuiltInCommand {
+public:
+    NopCommand(const char* cmd_line);
+    virtual ~NopCommand() = default;
+    void execute() override {}
 };
 
 class ExternalCommand : public Command {
