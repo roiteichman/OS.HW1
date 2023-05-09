@@ -53,6 +53,7 @@ const std::string WHITESPACE = " \n\r\t\f\v";
 #define ERR_FD_INDEX 2
 #define FULL_PERMISSIONS 777
 #define OCTAL_BASE 8
+#define POSITIVE_NUM 1
 
 
 string _ltrim(const std::string& s)
@@ -875,7 +876,7 @@ void KillCommand::execute() {
         return;
     }
     try{
-        signal_id = stoi(string(m_cmd_line[1]+1));
+        _isNum(m_cmd_line[1]) == POSITIVE_NUM ? signal_id = stoi(string(m_cmd_line[1])) : signal_id = stoi(string(m_cmd_line[1]+1));
     }
     catch (const invalid_argument& invalidArgument){
         cerr << "smash error: kill: invalid arguments" << endl;
