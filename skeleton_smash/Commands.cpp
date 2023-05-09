@@ -903,10 +903,10 @@ void KillCommand::execute() {
     else{
         cout << "signal number " << signal_id << " was sent to pid "<< job_ptr->m_pid << endl;
         if (signal_id == SIGSTOP || signal_id == SIGTSTP){
-            //job_ptr->m_state=STOPPED;
+            job_ptr->m_state=STOPPED;
         }
         else if(signal_id == SIGCONT){
-            //job_ptr->m_state=BACKGROUND;
+            job_ptr->m_state=BACKGROUND;
         }
     }
     #endif
