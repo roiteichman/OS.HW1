@@ -868,8 +868,9 @@ void KillCommand::execute() {
         job_id = stoi(string(m_cmd_line[ANOTHER_ARGS]));
     }
     catch(const invalid_argument& invalidArgument) {
-        cout << job_id << endl;
+        cout << m_cmd_line[ANOTHER_ARGS] << endl;
         cerr << "smash error: kill: invalid arguments" << endl;
+        return;
     }
     job_ptr = SmallShell::getInstance().getMJobList().getJobById(job_id);
     if (job_ptr == NULL) {
@@ -881,6 +882,7 @@ void KillCommand::execute() {
     }
     catch (const invalid_argument& invalidArgument){
         cerr << "smash error: kill: invalid arguments" << endl;
+        return;
     }
 
     #ifndef RUN_LOCAL
