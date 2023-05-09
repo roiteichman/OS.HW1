@@ -859,7 +859,7 @@ void KillCommand::execute() {
     //get the job_id in int
 
     // if not negative num or not num or the pid is not num
-    if (_isNum(m_cmd_line[1])!=-1 || !_isNum (m_cmd_line[ANOTHER_ARGS])) {
+    if (!_isNum(m_cmd_line[1]) || !_isNum (m_cmd_line[ANOTHER_ARGS])) {
         cerr << "smash error: kill: invalid arguments" << endl;
         return;
     }
