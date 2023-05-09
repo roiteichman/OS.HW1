@@ -820,7 +820,7 @@ int _isNum (char* c) {
     if (*c == '-') {
         sign = true;
         c++;
-        if (*c = '\0'){
+        if (*c == '\0'){
             return 0;
         }
     }
@@ -864,11 +864,20 @@ void KillCommand::execute() {
         cerr << "smash error: kill: invalid arguments" << endl;
         return;
     }
+
+    //int job_id_len = 0;
+
+    //for (int i = 0; m_cmd_line[ANOTHER_ARGS][i] != '\0'; ++i) {
+    //    job_id++;
+    //}
+
+    //string jobid = m_cmd_line[ANOTHER_ARGS];
+    //cout << jobid << endl;
     try{
         job_id = stoi(string(m_cmd_line[ANOTHER_ARGS]));
     }
     catch(const invalid_argument& invalidArgument) {
-        cout << m_cmd_line[ANOTHER_ARGS+1] << endl;
+        //cout << m_cmd_line[ANOTHER_ARGS] << endl;
         cerr << "smash error: kill: invalid arguments" << endl;
         return;
     }
@@ -878,6 +887,7 @@ void KillCommand::execute() {
         return;
     }
     try{
+        //cout << m_cmd_line[1]+1 << endl;
         signal_id = stoi(string(m_cmd_line[1]+1));
     }
     catch (const invalid_argument& invalidArgument){
