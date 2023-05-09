@@ -539,9 +539,7 @@ void RedirectionCommand::execute() {
     if (res2 == -1){
         perror("smash error: open failed");
     }
-    cout << "hi" << endl;
     m_cmd->execute();
-    cout << "bi" << endl;
     int res3 = dup2(new_screen_fd, 1);
     if (res3 == -1){
         perror("smash error: dup2 failed");
