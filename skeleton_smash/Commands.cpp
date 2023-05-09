@@ -858,19 +858,28 @@ void KillCommand::execute() {
 
     //get the job_id in int
 
-    if ((m_cmd_line[1][0]!='-' && !_isNum(m_cmd_line[1]+1) ) || !_isNum (m_cmd_line[ANOTHER_ARGS])) {
+    // if not negative num or not num or the pid is not num
+    if (_isNum(m_cmd_line[1])!=-1 || !_isNum (m_cmd_line[ANOTHER_ARGS])) {
         cerr << "smash error: kill: invalid arguments" << endl;
         return;
     }
-    job_id = stoi(string(m_cmd_line[ANOTHER_ARGS]));
-    cout << "hi" << endl;
+    try{
+        job_id = stoi(string(m_cmd_line[ANOTHER_ARGS]));
+    }
+    catch(const invalid_argument& invalidArgument) {
+        cerr << "smash error: kill: invalid arguments" << endl;
+    }
     job_ptr = SmallShell::getInstance().getMJobList().getJobById(job_id);
     if (job_ptr == NULL) {
         cerr << "smash error: kill: job-id " << job_id << " does not exist" << endl;
         return;
     }
-    signal_id = stoi(string(m_cmd_line[1]+1));
-
+    try{
+        signal_id = stoi(string(m_cmd_line[1]+1));
+    }
+    catch (const invalid_argument& invalidArgument){
+        cerr << "smash error: kill: invalid arguments" << endl;
+    }
 
     #ifndef RUN_LOCAL
     int res = kill(job_ptr->m_pid, signal_id);
