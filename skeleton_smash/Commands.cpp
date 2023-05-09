@@ -866,6 +866,7 @@ void KillCommand::execute() {
     }
     try{
         job_id = stoi(string(m_cmd_line[ANOTHER_ARGS]));
+        cout << job_id << endl;
     }
     catch(const invalid_argument& invalidArgument) {
         cerr << "smash error: kill: invalid arguments" << endl;
