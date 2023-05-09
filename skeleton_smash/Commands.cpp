@@ -527,15 +527,17 @@ RedirectionCommand::~RedirectionCommand() noexcept {
 
 void RedirectionCommand::execute() {
     #ifndef RUN_LOCAL
+    // copy the fd of the screen so we can return it latter to be in FDT[1]
     int new_screen_fd = dup(1);
     if (new_screen_fd == -1){
         perror("smash error: dup failed");
     }
+    // close the screen
     int res = close(1);
     if (res == -1){
         perror("smash error: close failed");
     }
-    int res2 = open(m_path, m_append ? (O_WRONLY | O_CREAT | O_APPEND) : (O_WRONLY | O_CREAT | O_TRUNC), 0666);
+    int res2 = open(m_path, m_append ? (O_WRONLY | O_CREAT | O_APPEND | O_TRUNC) : (O_WRONLY | O_CREAT | O_TRUNC), 0666);
     if (res2 == -1){
         perror("smash error: open failed");
     }
