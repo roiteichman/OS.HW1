@@ -1140,9 +1140,11 @@ TimeoutCommand::TimeoutCommand(const char *cmd_line):BuiltInCommand(cmd_line), m
     if(_isNum(m_cmd_line[1])){
         m_sec=stoi(string(m_cmd_line[1]));
     }
+    /*
     if (m_cmd_line[ANOTHER_ARGS] == NULL){
         return;
     }
+     */
 
     string cmd;
     for (int i = ANOTHER_ARGS; m_cmd_line[i] != NULL; i++) {
