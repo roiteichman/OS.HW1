@@ -940,6 +940,7 @@ ForegroundCommand::ForegroundCommand(const char *cmd_line): BuiltInCommand(cmd_l
 
 void ForegroundCommand::execute() {
     Job* job_ptr = NULL;
+    // if no arguments mentioned, means the last job in the bg
     if (m_cmd_line[1] == NULL) {
         job_ptr = SmallShell::getInstance().getMJobList().getLastJob();
         if (job_ptr == NULL) {
@@ -947,22 +948,31 @@ void ForegroundCommand::execute() {
             return;
         }
     }
+    // check if there are arguments, if so, take the job_id from there
     else {
         if (m_cmd_line[ANOTHER_ARGS] != NULL || !_isNum (m_cmd_line[1])) {
             cerr << "smash error: fg: invalid arguments" << endl;
             return;
         }
-        int job_id = stoi(string(m_cmd_line[1]));
+        try{
+            int job_id = stoi(string(m_cmd_line[1]));
+        }
+        catch (const invalid_argument& invalidArgument){
+            cerr << "smash error: fg: invalid arguments" << endl;
+        }
         job_ptr = SmallShell::getInstance().getMJobList().getJobById(job_id);
         if (job_ptr == NULL) {
             cerr << "smash error: fg: job-id " << job_id << " does not exist" << endl;
             return;
         }
     }
+    // remove the job from the jobList and set it into the ForeGround
     SmallShell::getInstance().getMJobList().removeJobById(job_ptr->m_job_id);
     assert(SmallShell::getInstance().getFgJob() == NULL);
     SmallShell::getInstance().setFgJob(job_ptr);
     job_ptr->print2();
+
+    //
     #ifndef RUN_LOCAL
     if (job_ptr->m_state == STOPPED) {
         int res = kill (job_ptr->m_pid, SIGCONT);
@@ -980,7 +990,7 @@ void ForegroundCommand::execute() {
     }
     #endif
     if (job_ptr->m_state != STOPPED) {
-        assert(job_ptr->m_state == FOREGROUND);
+        assert(job_ptr->m_state == BACKGROUND);
         delete job_ptr;
         SmallShell::getInstance().setFgJob(NULL);
     }
