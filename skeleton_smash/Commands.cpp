@@ -950,15 +950,17 @@ void ForegroundCommand::execute() {
     }
     // check if there are arguments, if so, take the job_id from there
     else {
+        int job_id =0;
         if (m_cmd_line[ANOTHER_ARGS] != NULL || !_isNum (m_cmd_line[1])) {
             cerr << "smash error: fg: invalid arguments" << endl;
             return;
         }
         try{
-            int job_id = stoi(string(m_cmd_line[1]));
+            job_id = stoi(string(m_cmd_line[1]));
         }
         catch (const invalid_argument& invalidArgument){
             cerr << "smash error: fg: invalid arguments" << endl;
+            return;
         }
         job_ptr = SmallShell::getInstance().getMJobList().getJobById(job_id);
         if (job_ptr == NULL) {
