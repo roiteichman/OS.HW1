@@ -529,7 +529,7 @@ RedirectionCommand::~RedirectionCommand() noexcept {
 //TODO it is O.K. to return? and do it for pipe command
 void RedirectionCommand::execute() {
     #ifndef RUN_LOCAL
-    // copy the fd of the screen so we can return it latter to be in FDT[1]
+    // copy the fd of the screen (1) so we can return it latter to be in FDT[1]
     int new_screen_fd = dup(1);
     if (new_screen_fd == -1){
         perror("smash error: dup failed");
@@ -545,6 +545,7 @@ void RedirectionCommand::execute() {
         }
         return;
     }
+    // open new file to write, it means its get the fd 1
     int res2 = open(m_path, m_append ? (O_WRONLY | O_CREAT | O_APPEND) : (O_WRONLY | O_CREAT | O_TRUNC), 0666);
     if (res2 == -1){
         perror("smash error: open failed");
@@ -554,12 +555,15 @@ void RedirectionCommand::execute() {
         }
         return;
     }
+    // the cmd is prints to the cout == FDT[1] by default, so now prints to the pipe
     m_cmd->execute();
+    // return FDT[1] to be the screen
     int res3 = dup2(new_screen_fd, 1);
     if (res3 == -1){
         perror("smash error: dup2 failed");
         return;
     }
+    // close the temp fd that hold the copy of the screen
     int res4 = close(new_screen_fd);
     if (res4 == -1){
         perror("smash error: close failed");
@@ -964,6 +968,10 @@ void ForegroundCommand::execute() {
         int res = kill (job_ptr->m_pid, SIGCONT);
         if (res == -1){
             perror("smash error: kill failed");
+            return;
+        }
+        else{
+            job_ptr->m_state=FOREGROUND;
         }
     }
     int res = waitpid(job_ptr->m_pid, NULL, WUNTRACED);
