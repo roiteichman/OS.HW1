@@ -18,7 +18,7 @@ class Command {
 public:
     bool m_is_back_ground;
     bool m_is_complex;
-    char* m_cmd_line[COMMAND_MAX_ARGS+1];
+    char* m_cmd_line[COMMAND_MAX_ARGS+3];
     int m_desc_len_in_words;
     char m_full_cmd_line[COMMAND_MAX_CHARACTERS+1];
     int m_alarm_time;

@@ -84,6 +84,7 @@ int _parseCommandLine(const char* cmd_line, char** args) {
         args[++i] = NULL;
     }
     args[i] = NULL;
+    args[i+1] = NULL;
     return i;
 
     FUNC_EXIT()
@@ -581,6 +582,8 @@ m_error(cmd_line[separate+1]=='&'), m_read_cmd(NULL), m_write_cmd(NULL){
     _removeBackgroundSign(temp_cmd);
     _removeBackgroundSign(temp_cmd+separate+separate_len);
     m_write_cmd = SmallShell::getInstance().CreateCommand(temp_cmd);
+    // we want it in background. then the pipe will de open:
+    m_write_cmd->m_is_back_ground = true;
     m_read_cmd = SmallShell::getInstance().CreateCommand(temp_cmd+separate+separate_len);
 }
 
@@ -835,7 +838,7 @@ void QuitCommand::execute() {
 }
 
 int _isNum (char* c) {
-    if  (*c =='\0'){
+    if  (c == NULL || *c =='\0'){
         return 0;
     }
     bool sign = false;
