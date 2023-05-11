@@ -529,7 +529,7 @@ RedirectionCommand::~RedirectionCommand() noexcept {
 //TODO it is O.K. to return? and do it for pipe command
 void RedirectionCommand::execute() {
     #ifndef RUN_LOCAL
-    // copy the fd of the screen so we can return it latter to be in FDT[1]
+    // copy the fd of the screen (1) so we can return it latter to be in FDT[1]
     int new_screen_fd = dup(1);
     if (new_screen_fd == -1){
         perror("smash error: dup failed");
@@ -545,6 +545,7 @@ void RedirectionCommand::execute() {
         }
         return;
     }
+    // open new file to write, it means its get the fd 1
     int res2 = open(m_path, m_append ? (O_WRONLY | O_CREAT | O_APPEND) : (O_WRONLY | O_CREAT | O_TRUNC), 0666);
     if (res2 == -1){
         perror("smash error: open failed");
@@ -554,12 +555,15 @@ void RedirectionCommand::execute() {
         }
         return;
     }
+    // the cmd is prints to the cout == FDT[1] by default, so now prints to the pipe
     m_cmd->execute();
+    // return FDT[1] to be the screen
     int res3 = dup2(new_screen_fd, 1);
     if (res3 == -1){
         perror("smash error: dup2 failed");
         return;
     }
+    // close the temp fd that hold the copy of the screen
     int res4 = close(new_screen_fd);
     if (res4 == -1){
         perror("smash error: close failed");
@@ -936,6 +940,7 @@ ForegroundCommand::ForegroundCommand(const char *cmd_line): BuiltInCommand(cmd_l
 
 void ForegroundCommand::execute() {
     Job* job_ptr = NULL;
+    // if no arguments mentioned, means the last job in the bg
     if (m_cmd_line[1] == NULL) {
         job_ptr = SmallShell::getInstance().getMJobList().getLastJob();
         if (job_ptr == NULL) {
@@ -943,27 +948,42 @@ void ForegroundCommand::execute() {
             return;
         }
     }
+    // check if there are arguments, if so, take the job_id from there
     else {
+        int job_id =0;
         if (m_cmd_line[ANOTHER_ARGS] != NULL || !_isNum (m_cmd_line[1])) {
             cerr << "smash error: fg: invalid arguments" << endl;
             return;
         }
-        int job_id = stoi(string(m_cmd_line[1]));
+        try{
+            job_id = stoi(string(m_cmd_line[1]));
+        }
+        catch (const invalid_argument& invalidArgument){
+            cerr << "smash error: fg: invalid arguments" << endl;
+            return;
+        }
         job_ptr = SmallShell::getInstance().getMJobList().getJobById(job_id);
         if (job_ptr == NULL) {
             cerr << "smash error: fg: job-id " << job_id << " does not exist" << endl;
             return;
         }
     }
+    // remove the job from the jobList and set it into the ForeGround
     SmallShell::getInstance().getMJobList().removeJobById(job_ptr->m_job_id);
     assert(SmallShell::getInstance().getFgJob() == NULL);
     SmallShell::getInstance().setFgJob(job_ptr);
     job_ptr->print2();
+
+    //
     #ifndef RUN_LOCAL
     if (job_ptr->m_state == STOPPED) {
         int res = kill (job_ptr->m_pid, SIGCONT);
         if (res == -1){
             perror("smash error: kill failed");
+            return;
+        }
+        else{
+            job_ptr->m_state=FOREGROUND;
         }
     }
     int res = waitpid(job_ptr->m_pid, NULL, WUNTRACED);
@@ -972,7 +992,7 @@ void ForegroundCommand::execute() {
     }
     #endif
     if (job_ptr->m_state != STOPPED) {
-        assert(job_ptr->m_state == FOREGROUND);
+        assert(job_ptr->m_state == BACKGROUND);
         delete job_ptr;
         SmallShell::getInstance().setFgJob(NULL);
     }
@@ -1117,10 +1137,14 @@ void ChmodCommand::execute() {
  */
 
 TimeoutCommand::TimeoutCommand(const char *cmd_line):BuiltInCommand(cmd_line), m_cmd(NULL), m_sec(-1) {
-
     if(_isNum(m_cmd_line[1])){
         m_sec=stoi(string(m_cmd_line[1]));
     }
+    /*
+    if (m_cmd_line[ANOTHER_ARGS] == NULL){
+        return;
+    }
+     */
 
     string cmd;
     for (int i = ANOTHER_ARGS; m_cmd_line[i] != NULL; i++) {
@@ -1134,7 +1158,6 @@ TimeoutCommand::TimeoutCommand(const char *cmd_line):BuiltInCommand(cmd_line), m
     m_cmd->setMFullCmdLine(this->m_full_cmd_line);
 }
 
-//TODO toimeout for another timeout/IO-command
 void TimeoutCommand::execute() {
     if (m_sec < 0 || m_cmd == NULL){
         cerr << "smash error: timeout: invalid arguments" << endl;
