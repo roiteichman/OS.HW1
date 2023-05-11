@@ -995,7 +995,8 @@ void ForegroundCommand::execute() {
     }
     #endif
     if (job_ptr->m_state != STOPPED) {
-        assert(job_ptr->m_state == FOREGROUND);
+        assert(job_ptr->m_state == BACKGROUND);
+        job_ptr->m_state = FOREGROUND;
         delete job_ptr;
         SmallShell::getInstance().setFgJob(NULL);
     }
