@@ -870,6 +870,8 @@ void KillCommand::execute() {
     int job_id = 0;
     Job* job_ptr = NULL;
 
+    //TODO check what is the correct order for error messages
+
     // get the job_id:
     if (m_cmd_line[ANOTHER_ARGS] != NULL) {
         try {
