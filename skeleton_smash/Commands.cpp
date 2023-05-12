@@ -54,7 +54,7 @@ const std::string WHITESPACE = " \n\r\t\f\v";
 #define FULL_PERMISSIONS 777
 #define OCTAL_BASE 8
 #define NEGATIVE_NUM -1
-#define ONLY_OWNER_CAN_READ_AND_WRITE 600
+#define ONLY_OWNER_CAN_READ_AND_WRITE 640
 
 
 string _ltrim(const std::string& s)
