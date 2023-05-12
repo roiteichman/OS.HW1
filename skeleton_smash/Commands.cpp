@@ -493,11 +493,11 @@ void ChangeDirCommand::execute() {
             strcpy(asked_path, old_pwd);
         }
     }
-    char* res0 = getcwd(old_pwd, DIR_MAX_LEN);
-    if (res0 == NULL) perror ("smash error: getcwd failed");
+    if (getcwd(old_pwd, DIR_MAX_LEN) == NULL) {
+        perror ("smash error: getcwd failed");
+    }
 
-    int res = chdir(asked_path);
-    if (res != 0){
+    if (chdir(asked_path) != 0){
         perror("smash error: cd failed");
         return;
     }
@@ -506,7 +506,6 @@ void ChangeDirCommand::execute() {
         SmallShell::getInstance().setMDidFirstCd(true);
         SmallShell::getInstance().setMPLastPwd(old_pwd);
     }
-
 }
 
 /*
