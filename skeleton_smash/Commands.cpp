@@ -1225,7 +1225,8 @@ void TimeoutCommand::execute() {
             AlarmList::getInstance().addProcess(m_full_cmd_line, -1, m_sec);
         }
         else {
-            // because its is_nop dont need to do alram
+            // because its is_nop dont need to do alram, its invalid_args
+            cerr << "smash error: timeout: invalid arguments" << endl;
         }
 
         // TODO we need this?:
