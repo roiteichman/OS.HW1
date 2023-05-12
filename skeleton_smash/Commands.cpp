@@ -1180,7 +1180,13 @@ void ChmodCommand::execute() {
 
 TimeoutCommand::TimeoutCommand(const char *cmd_line):BuiltInCommand(cmd_line), m_cmd(NULL), m_sec(-1) {
     if(_isNum(m_cmd_line[1])){
-        m_sec=stoi(string(m_cmd_line[1]));
+        try{
+            m_sec=stoi(string(m_cmd_line[1]));
+        }
+        catch (const invalid_argument &invalidArgument) {
+            cerr << "smash error: TimeoutCommand: invalid arguments" << endl;
+            return;
+        }
     }
     /*
     if (m_cmd_line[ANOTHER_ARGS] == NULL){

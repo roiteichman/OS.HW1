@@ -118,7 +118,7 @@ void ctrlCHandler(int sig_num) {
 }
 
 void alarmHandler(int sig_num) {
-    cout << "smash: got an alarm" << endl;
+    //cout << "smash: got an alarm" << endl;
     AlarmList::getInstance().removeAlarmedProcess();
 }
 
