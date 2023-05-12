@@ -113,7 +113,7 @@ void ctrlCHandler(int sig_num) {
         perror("smash error: kill failed");
     }
     #endif
-    SmallShell::getInstance().setFgJob(NULL);
+    //SmallShell::getInstance().setFgJob(NULL);
     cout << "smash: process " << fg_job_ptr->m_pid << " was killed" << endl;
 }
 

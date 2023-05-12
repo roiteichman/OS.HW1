@@ -379,6 +379,7 @@ void ExternalCommand::execute() {
 	        if (res == -1){
                 perror("smash error: waitpid failed");
             }
+            // if there was not Ctrl-Z:
 	        if (new_job->m_state != STOPPED) {
 		        delete new_job; // TODO if the job only stopped
 		        SmallShell::getInstance().setFgJob(NULL);
@@ -985,9 +986,9 @@ void ForegroundCommand::execute() {
             perror("smash error: kill failed");
             return;
         }
-        else{
-            job_ptr->m_state=FOREGROUND;
-        }
+//        else{
+//            job_ptr->m_state=FOREGROUND;
+//        }
     }
     job_ptr->m_state = FOREGROUND;
     // wait for "moving" it to the FG
@@ -1001,8 +1002,8 @@ void ForegroundCommand::execute() {
 
     // check if Ctrl-z or stopped, we enter this scope if the process is dead (maybe be alarm)
     if (job_ptr->m_state != STOPPED) {
-        //assert(job_ptr->m_state == BACKGROUND);
-        job_ptr->m_state = FOREGROUND;
+        assert(job_ptr->m_state == FOREGROUND);
+//        job_ptr->m_state = FOREGROUND;
         delete job_ptr;
         SmallShell::getInstance().setFgJob(NULL);
     }
