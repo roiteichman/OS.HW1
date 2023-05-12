@@ -60,8 +60,8 @@ void AlarmList::removeAlarmedProcess() {
             break;
         }
         SmallShell::getInstance().getMJobList().removeFinishedJobs();
-        int is_finished = waitpid(m_list.begin()->m_pid, NULL, WNOHANG);
-        if (is_finished == 0) {
+        // wait - to check if the job is running:
+        if (waitpid(m_list.begin()->m_pid, NULL, WNOHANG) == 0) {
             int res = kill(m_list.begin()->m_pid, SIGKILL);
             if (res == -1) {
                 perror("smash error: kill failed");

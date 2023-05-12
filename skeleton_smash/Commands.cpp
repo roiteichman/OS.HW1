@@ -977,7 +977,7 @@ void ForegroundCommand::execute() {
     SmallShell::getInstance().setFgJob(job_ptr);
     job_ptr->print2();
 
-    //
+    // if STOPPED need to send SIGCONT (runs like BG)
     #ifndef RUN_LOCAL
     if (job_ptr->m_state == STOPPED) {
         int res = kill (job_ptr->m_pid, SIGCONT);
@@ -989,17 +989,25 @@ void ForegroundCommand::execute() {
             job_ptr->m_state=FOREGROUND;
         }
     }
+    job_ptr->m_state = FOREGROUND;
+    // wait for "moving" it to the FG
     int res = waitpid(job_ptr->m_pid, NULL, WUNTRACED);
     if (res == -1){
         perror("smash error: waitpid failed");
     }
     #endif
+
+    // here - can be signal
+
+    // check if Ctrl-z or stopped, we enter this scope if the process is dead (maybe be alarm)
     if (job_ptr->m_state != STOPPED) {
         //assert(job_ptr->m_state == BACKGROUND);
         job_ptr->m_state = FOREGROUND;
         delete job_ptr;
         SmallShell::getInstance().setFgJob(NULL);
     }
+    // if Ctrl-z moving to job_list, and dont need to do something
+
 }
 
 
