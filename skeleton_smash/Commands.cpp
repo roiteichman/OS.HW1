@@ -867,24 +867,37 @@ KillCommand::KillCommand(const char *cmd_line): BuiltInCommand(cmd_line) {}
 
 void KillCommand::execute() {
 
-    int signal_id;
-    int job_id;
+    int signal_id = 0;
+    int job_id = 0;
     Job* job_ptr = NULL;
+
+    // get the job_id:
+    if (m_cmd_line[ANOTHER_ARGS] != NULL) {
+        try {
+            job_id = stoi(string(m_cmd_line[ANOTHER_ARGS]));
+        }
+        catch (const invalid_argument &invalidArgument) {
+            cerr << "smash error: kill: invalid arguments" << endl;
+            return;
+        }
+        // get the job, and check if it is exist:
+        job_ptr = SmallShell::getInstance().getMJobList().getJobById(job_id);
+        if (job_ptr == NULL) {
+            cerr << "smash error: kill: job-id " << job_id << " does not exist" << endl;
+            return;
+        }
+    }
 
     // check if there are too many args
     if (this->getMCmdLine()[ANOTHER_ARGS+1] != NULL){
         cerr <<"smash error: kill: invalid arguments" << endl;
         return;
     }
-
     // check if there is job_id, too few args
     if (this->getMCmdLine()[ANOTHER_ARGS] == NULL || this->getMCmdLine()[1] == NULL){
         cerr <<"smash error: kill: invalid arguments"<< endl;
         return;
     }
-
-
-    //get the job_id in int
 
     // if not negative num or not num or the pid is not num
     if (_isNum(m_cmd_line[1]) != NEGATIVE_NUM || !_isNum (m_cmd_line[ANOTHER_ARGS])) {
@@ -892,27 +905,6 @@ void KillCommand::execute() {
         return;
     }
 
-    //int job_id_len = 0;
-
-    //for (int i = 0; m_cmd_line[ANOTHER_ARGS][i] != '\0'; ++i) {
-    //    job_id++;
-    //}
-
-    //string jobid = m_cmd_line[ANOTHER_ARGS];
-    //cout << jobid << endl;
-    try{
-        job_id = stoi(string(m_cmd_line[ANOTHER_ARGS]));
-    }
-    catch(const invalid_argument& invalidArgument) {
-        //cout << m_cmd_line[ANOTHER_ARGS] << endl;
-        cerr << "smash error: kill: invalid arguments" << endl;
-        return;
-    }
-    job_ptr = SmallShell::getInstance().getMJobList().getJobById(job_id);
-    if (job_ptr == NULL) {
-        cerr << "smash error: kill: job-id " << job_id << " does not exist" << endl;
-        return;
-    }
     try{
         //cout << m_cmd_line[1]+1 << endl;
         signal_id = stoi(string(m_cmd_line[1]+1));
@@ -939,8 +931,8 @@ void KillCommand::execute() {
     #endif
 }
 
-ForegroundCommand::ForegroundCommand(const char *cmd_line): BuiltInCommand(cmd_line) {}
 
+ForegroundCommand::ForegroundCommand(const char *cmd_line): BuiltInCommand(cmd_line) {}
 
 
 void ForegroundCommand::execute() {
@@ -955,7 +947,7 @@ void ForegroundCommand::execute() {
     }
     // check if there are arguments, if so, take the job_id from there
     else {
-        int job_id =0;
+        int job_id = 0;
         if (m_cmd_line[ANOTHER_ARGS] != NULL || !_isNum (m_cmd_line[1])) {
             cerr << "smash error: fg: invalid arguments" << endl;
             return;
@@ -987,10 +979,8 @@ void ForegroundCommand::execute() {
             perror("smash error: kill failed");
             return;
         }
-//        else{
-//            job_ptr->m_state=FOREGROUND;
-//        }
     }
+
     job_ptr->m_state = FOREGROUND;
     // wait for "moving" it to the FG
     int res = waitpid(job_ptr->m_pid, NULL, WUNTRACED);
@@ -998,8 +988,6 @@ void ForegroundCommand::execute() {
         perror("smash error: waitpid failed");
     }
     #endif
-
-    // here - can be signal
 
     // check if Ctrl-z or stopped, we enter this scope if the process is dead (maybe be alarm)
     if (job_ptr->m_state != STOPPED) {
@@ -1009,7 +997,6 @@ void ForegroundCommand::execute() {
         SmallShell::getInstance().setFgJob(NULL);
     }
     // if Ctrl-z moving to job_list, and dont need to do something
-
 }
 
 
@@ -1061,31 +1048,64 @@ void BackgroundCommand::execute() {
 SetcoreCommand::SetcoreCommand(const char *cmd_line): BuiltInCommand(cmd_line) {}
 
 void SetcoreCommand::execute() {
+
+    int core_num = 0;
+    int job_id = 0;
+    Job* job_ptr = NULL;
+    bool invalid_arguments = false;
+
+    // get the job_id:
+    if (m_cmd_line[1] != NULL) {
+        try {
+            job_id = stoi(string(m_cmd_line[1]));
+        }
+        catch (const invalid_argument &invalidArgument) {
+            invalid_arguments = true;
+            //cerr << "smash error: setcore: invalid arguments" << endl;
+            //return;
+        }
+        // get the job, and check if it is exist:
+        if (!invalid_arguments) {
+            job_ptr = SmallShell::getInstance().getMJobList().getJobById(job_id);
+            if (job_ptr == NULL) {
+                cerr << "smash error: setcore: job-id " << job_id << " does not exist" << endl;
+                return;
+            }
+        }
+    }
+
+    // get the core number:
+    if (m_cmd_line[ANOTHER_ARGS] != NULL) {
+        try {
+            core_num = stoi(string(m_cmd_line[ANOTHER_ARGS]));
+        }
+        catch (const invalid_argument &invalidArgument) {
+            cerr << "smash error: setcore: invalid arguments" << endl;
+            return;
+        }
+        // get the core, and check if it is exist:
+        #ifndef RUN_LOCAL
+        if (core_num < 0 || core_num >= get_nprocs_conf()) {
+            cerr << "smash error: setcore: invalid core number" << endl;
+            return;
+        }
+        #endif
+    }
+        if (invalid_arguments) {
+            cerr << "smash error: setcore: invalid arguments" << endl;
+            return;
+        }
+
     if (m_cmd_line[ANOTHER_ARGS+1] != NULL || m_cmd_line[1] == NULL || m_cmd_line[ANOTHER_ARGS] == NULL) {
         cerr << "smash error: setcore: invalid arguments" << endl;
         return;
     }
-    if (!_isNum (m_cmd_line[1]) || !_isNum (m_cmd_line[ANOTHER_ARGS])) {
-        cerr << "smash error: setcore: invalid arguments" << endl;
-        return;
-    }
-    int job_id = stoi(string(m_cmd_line[1]));
-    int core_num = stoi(string(m_cmd_line[2]));
-    Job* job_ptr = SmallShell::getInstance().getMJobList().getJobById(job_id);
-    if (job_ptr == NULL) {
-        cerr << "smash error: setcore: job-id " << job_id << " does not exist" << endl;
-        return;
-    }
+
 #ifndef RUN_LOCAL
-    if (core_num < 0 || core_num >= get_nprocs_conf()) {
-        cerr << "smash error: setcore: invalid core number" << endl;
-        return;
-    }
     cpu_set_t set;
     CPU_ZERO(&set);
     CPU_SET(core_num,&set);
-    int res = sched_setaffinity(job_ptr->m_pid, sizeof(set), &set);
-    if (res == -1){
+    if (sched_setaffinity(job_ptr->m_pid, sizeof(set), &set) == -1){
         perror("smash error: sched_setaffinity failed");
     }
 #endif
