@@ -54,6 +54,7 @@ const std::string WHITESPACE = " \n\r\t\f\v";
 #define FULL_PERMISSIONS 777
 #define OCTAL_BASE 8
 #define NEGATIVE_NUM -1
+#define ONLY_OWNER_CAN_READ_AND_WRITE 600
 
 
 string _ltrim(const std::string& s)
@@ -548,7 +549,7 @@ void RedirectionCommand::execute() {
         return;
     }
     // open new file to write, it means its get the fd 1
-    int res2 = open(m_path, m_append ? (O_WRONLY | O_CREAT | O_APPEND) : (O_WRONLY | O_CREAT | O_TRUNC), 0666);
+    int res2 = open(m_path, m_append ? (O_WRONLY | O_CREAT | O_APPEND) : (O_WRONLY | O_CREAT | O_TRUNC), ONLY_OWNER_CAN_READ_AND_WRITE);
     if (res2 == -1){
         perror("smash error: open failed");
         int res11 = dup2(new_screen_fd, 1);
@@ -922,8 +923,8 @@ void KillCommand::execute() {
     }
 
     #ifndef RUN_LOCAL
-    int res = kill(job_ptr->m_pid, signal_id);
-    if (res==-1){
+
+    if (kill(job_ptr->m_pid, signal_id) == -1){
         perror("smash error: kill failed");
     }
     else{
@@ -1030,7 +1031,14 @@ void BackgroundCommand::execute() {
             cerr << "smash error: bg: invalid arguments" << endl;
             return;
         }
-        int job_id = stoi(string(m_cmd_line[1]));
+        int job_id = 0;
+        try{
+            job_id = stoi(string(m_cmd_line[1]));
+        }
+        catch (const invalid_argument& invalidArgument){
+            cerr << "smash error: bg: invalid arguments" << endl;
+            return;
+        }
         job_ptr = SmallShell::getInstance().getMJobList().getJobById(job_id);
         if (job_ptr == NULL) {
             cerr << "smash error: bg: job-id " << job_id << " does not exist" << endl;
