@@ -474,7 +474,7 @@ void ChangeDirCommand::execute() {
 
     if (m_cmd_line[1] == NULL ||  strcmp(m_cmd_line[1], "-") && m_cmd_line[ANOTHER_ARGS] != NULL
         || m_cmd_line[1] != NULL && m_cmd_line[ANOTHER_ARGS] != NULL ){
-        cerr << "smash error: cd: invalid arguments" << endl;
+        cerr << "smash error: cd: too many arguments" << endl;
         return;
     }
 
