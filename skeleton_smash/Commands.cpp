@@ -1217,8 +1217,7 @@ void TimeoutCommand::execute() {
     if (tmp == nullptr){
         // Build_In Command
 
-        /// TODO: if its nop Command - dont need to do alarm
-
+        // if just wrote timeout without command is invalid_args
         NopCommand* is_nop = dynamic_cast<NopCommand*>(m_cmd);
         if (is_nop == nullptr){
             // not nop
