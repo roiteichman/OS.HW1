@@ -54,7 +54,7 @@ const std::string WHITESPACE = " \n\r\t\f\v";
 #define FULL_PERMISSIONS 777
 #define OCTAL_BASE 8
 #define NEGATIVE_NUM -1
-#define ONLY_OWNER_CAN_READ_AND_WRITE 0666
+#define PREMISSIONS 0777
 
 
 string _ltrim(const std::string& s)
@@ -548,7 +548,7 @@ void RedirectionCommand::execute() {
         return;
     }
     // open new file to write, it means its get the fd 1
-    int res2 = open(m_path, m_append ? (O_WRONLY | O_CREAT | O_APPEND) : (O_WRONLY | O_CREAT | O_TRUNC), ONLY_OWNER_CAN_READ_AND_WRITE);
+    int res2 = open(m_path, m_append ? (O_WRONLY | O_CREAT | O_APPEND) : (O_WRONLY | O_CREAT | O_TRUNC), PREMISSIONS);
     if (res2 == -1){
         perror("smash error: open failed");
         int res11 = dup2(new_screen_fd, 1);
