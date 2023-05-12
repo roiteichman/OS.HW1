@@ -1216,12 +1216,14 @@ void TimeoutCommand::execute() {
     ExternalCommand* tmp = dynamic_cast<ExternalCommand*>(m_cmd);
     if (tmp == nullptr){
         // Build_In Command
-        NopCommand* nop = dynamic_cast<NopCommand*>(m_cmd);
-        if (nop != nullptr){
+        NopCommand* is_nop = dynamic_cast<NopCommand*>(m_cmd);
+        if (is_nop != nullptr){
+            // not nop
             AlarmList::getInstance().addProcess(m_full_cmd_line, -1, m_sec);
         }
-        else{}
-        // because its nop dont need to do alram
+        else {
+            // because its is_nop dont need to do alram
+        }
 
         // TODO we need this?:
         //if (m_sec == 0) {
