@@ -55,6 +55,7 @@ const std::string WHITESPACE = " \n\r\t\f\v";
 #define OCTAL_BASE 8
 #define NEGATIVE_NUM -1
 #define PREMISSIONS 0777
+#define TEN 10
 
 
 string _ltrim(const std::string& s)
@@ -1169,15 +1170,15 @@ void ChmodCommand::execute() {
 
     int num_in_octal = 0;
 
-    int unity_digit = num_not_octal%10;
+    int unity_digit = num_not_octal%TEN;
 
     num_in_octal += unity_digit;
 
     int hundreds = 0;
-    while (num_not_octal > 10){
-        num_not_octal-=num_not_octal%10;
-        num_not_octal/=10;
-        int tens_digit = num_not_octal%10;
+    while (num_not_octal > TEN){
+        num_not_octal-=num_not_octal%TEN;
+        num_not_octal/=TEN;
+        int tens_digit = num_not_octal%TEN;
         num_in_octal += ((!hundreds) ? tens_digit * OCTAL_BASE : tens_digit * OCTAL_BASE*OCTAL_BASE);
         hundreds++;
     }
