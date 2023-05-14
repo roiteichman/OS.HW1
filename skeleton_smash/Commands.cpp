@@ -156,7 +156,7 @@ SmallShell methods:
 --------------------*/
 
 SmallShell::SmallShell() :
-    m_did_first_cd(false), m_fg_job(NULL), m_finish(false) {
+        m_did_first_cd(false), m_fg_job(NULL), m_finish(false) {
     strcpy(m_prompt, "smash");
     char buff[COMMAND_ARGS_MAX_LENGTH] = {0};
     char* res = getcwd(buff, COMMAND_ARGS_MAX_LENGTH);
@@ -210,7 +210,7 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     else if (firstWord.compare("showpid") == 0 || _trim(cmd_line).compare("showpid&") == 0) {
         return new ShowPidCommand(cmd_line);
     }
-    //TODO: cd& + second word is NULL
+        //TODO: cd& + second word is NULL
     else if (firstWord.compare("cd") == 0 || _trim(cmd_line).compare("cd&") == 0) {
         return new ChangeDirCommand(cmd_line);
     }
@@ -345,7 +345,7 @@ void ExternalCommand::execute() {
     if (pid==0){
         // child
         int res = setpgrp();
-	    if (res == -1) perror ("smash error: setpgrp failed");
+        if (res == -1) perror ("smash error: setpgrp failed");
 
         if (m_is_complex) {
             char cmd_for_bash[COMMAND_MAX_CHARACTERS];
@@ -377,17 +377,17 @@ void ExternalCommand::execute() {
         if (!m_is_back_ground){
             SmallShell::getInstance().setFgJob(new_job);
             int res = waitpid(new_job->m_pid ,NULL, WUNTRACED);
-	        if (res == -1){
+            if (res == -1){
                 perror("smash error: waitpid failed");
             }
             // if there was not Ctrl-Z:
-	        if (new_job->m_state != STOPPED) {
-		        delete new_job; // TODO if the job only stopped
-		        SmallShell::getInstance().setFgJob(NULL);
-	        }
+            if (new_job->m_state != STOPPED) {
+                delete new_job; // TODO if the job only stopped
+                SmallShell::getInstance().setFgJob(NULL);
+            }
 
         }
-        // background
+            // background
         else{
             new_job->m_state=BACKGROUND;
             SmallShell::getInstance().getMJobList().addNewJob(new_job);
@@ -512,8 +512,8 @@ void ChangeDirCommand::execute() {
  */
 
 RedirectionCommand::RedirectionCommand(const char *cmd_line, int separate): Command(cmd_line),
-    m_append(cmd_line[separate+1]=='>'),
-    m_cmd(NULL){
+                                                                            m_append(cmd_line[separate+1]=='>'),
+                                                                            m_cmd(NULL){
     int separate_len = m_append ? LONG_REDIRECTION_SIGN : 1;
     strcpy(m_path,_trim(string(cmd_line+separate+separate_len)).c_str());
     char temp_cmd[COMMAND_MAX_CHARACTERS];
@@ -529,7 +529,7 @@ RedirectionCommand::~RedirectionCommand() noexcept {
 
 //TODO it is O.K. to return? and do it for pipe command
 void RedirectionCommand::execute() {
-    #ifndef RUN_LOCAL
+#ifndef RUN_LOCAL
     // copy the fd of the screen (1) so we can return it latter to be in FDT[1]
     int new_screen_fd = dup(1);
     if (new_screen_fd == -1){
@@ -570,11 +570,11 @@ void RedirectionCommand::execute() {
         perror("smash error: close failed");
         return;
     }
-    #endif
+#endif
 }
 
 PipeCommand::PipeCommand(const char *cmd_line, int separate): Command(cmd_line),
-    m_write_cmd(NULL), m_read_cmd(NULL), m_error(cmd_line[separate+1]=='&')
+                                                              m_write_cmd(NULL), m_read_cmd(NULL), m_error(cmd_line[separate+1]=='&')
 {
     int separate_len = m_error ? LONG_PIPE_SIGN : 1;
     char temp_cmd[COMMAND_MAX_CHARACTERS];
@@ -652,7 +652,7 @@ Job struct:
 
 
 Job::Job(int job_id, int pid, STATE state, const char* cmd_line): m_job_id(job_id), m_pid(pid),
-m_state(state), m_insert_time(time(NULL)) {
+                                                                  m_state(state), m_insert_time(time(NULL)) {
     strcpy(m_full_cmd_line, cmd_line);
 }
 
@@ -736,7 +736,7 @@ void JobsList::removeFinishedJobs() {
     std::list<Job*> tmp_list;
     for (Job* job: m_list) {
         pid_t res = waitpid(job->m_pid, NULL, WNOHANG);
-	    if (res == -1){
+        if (res == -1){
             perror("smash error: waitpid failed");
         }
         else if (res){
@@ -828,10 +828,10 @@ void QuitCommand::execute() {
         SmallShell::getInstance().getMJobList().killAllJobs();
 
         while (size){
-        Job* job = SmallShell::getInstance().getMJobList().popMinPid();
-        job->print3();
-        size--;
-        delete job;
+            Job* job = SmallShell::getInstance().getMJobList().popMinPid();
+            job->print3();
+            size--;
+            delete job;
         }
         assert(SmallShell::getInstance().getMJobList().getSize()==0);
     }
@@ -915,7 +915,7 @@ void KillCommand::execute() {
         return;
     }
 
-    #ifndef RUN_LOCAL
+#ifndef RUN_LOCAL
 
     if (kill(job_ptr->m_pid, signal_id) == -1){
         perror("smash error: kill failed");
@@ -929,7 +929,7 @@ void KillCommand::execute() {
             job_ptr->m_state=BACKGROUND;
         }
     }
-    #endif
+#endif
 }
 
 
@@ -946,7 +946,7 @@ void ForegroundCommand::execute() {
             return;
         }
     }
-    // check if there are arguments, if so, take the job_id from there
+        // check if there are arguments, if so, take the job_id from there
     else {
         int job_id = 0;
         if (m_cmd_line[ANOTHER_ARGS] != NULL || !_isNum (m_cmd_line[1])) {
@@ -973,7 +973,7 @@ void ForegroundCommand::execute() {
     job_ptr->print2();
 
     // if STOPPED need to send SIGCONT (runs like BG)
-    #ifndef RUN_LOCAL
+#ifndef RUN_LOCAL
     if (job_ptr->m_state == STOPPED) {
         int res = kill (job_ptr->m_pid, SIGCONT);
         if (res == -1){
@@ -988,7 +988,7 @@ void ForegroundCommand::execute() {
     if (res == -1){
         perror("smash error: waitpid failed");
     }
-    #endif
+#endif
 
     // check if Ctrl-z or stopped, we enter this scope if the process is dead (maybe be alarm)
     if (job_ptr->m_state != STOPPED) {
@@ -1040,10 +1040,10 @@ void BackgroundCommand::execute() {
     }
     job_ptr->print2();
     job_ptr->m_state = BACKGROUND;
-    #ifndef RUN_LOCAL
+#ifndef RUN_LOCAL
     int res = kill (job_ptr->m_pid, SIGCONT);
     if (res == -1) perror("smash error: kill failed");
-    #endif
+#endif
 }
 
 SetcoreCommand::SetcoreCommand(const char *cmd_line): BuiltInCommand(cmd_line) {}
@@ -1085,17 +1085,17 @@ void SetcoreCommand::execute() {
             return;
         }
         // get the core, and check if it is exist:
-        #ifndef RUN_LOCAL
+#ifndef RUN_LOCAL
         if (core_num < 0 || core_num >= get_nprocs_conf()) {
             cerr << "smash error: setcore: invalid core number" << endl;
             return;
         }
-        #endif
+#endif
     }
-        if (invalid_arguments) {
-            cerr << "smash error: setcore: invalid arguments" << endl;
-            return;
-        }
+    if (invalid_arguments) {
+        cerr << "smash error: setcore: invalid arguments" << endl;
+        return;
+    }
 
     if (m_cmd_line[ANOTHER_ARGS+1] != NULL || m_cmd_line[1] == NULL || m_cmd_line[ANOTHER_ARGS] == NULL) {
         cerr << "smash error: setcore: invalid arguments" << endl;
@@ -1240,4 +1240,3 @@ void TimeoutCommand::execute() {
     m_cmd->execute();
 
 }
-
