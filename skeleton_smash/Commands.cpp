@@ -1159,14 +1159,25 @@ void ChmodCommand::execute() {
         return;
     }
 
+    int len = strlen(m_cmd_line[1]);
+
     int numInOctal = 0;
-    int hundreds_digit = m_cmd_line[1][0]-'0';
-    int tens_digit = m_cmd_line[1][1]-'0';
+
     int unity_digit = m_cmd_line[1][2]-'0';
 
     numInOctal += unity_digit;
-    numInOctal += tens_digit*OCTAL_BASE;
-    numInOctal += hundreds_digit*(OCTAL_BASE*OCTAL_BASE);
+
+    if (len > 1){
+        int tens_digit = m_cmd_line[1][1]-'0';
+        numInOctal += tens_digit*OCTAL_BASE;
+    }
+
+    if (len > 2){
+        int hundreds_digit = m_cmd_line[1][0]-'0';
+        numInOctal += hundreds_digit*(OCTAL_BASE*OCTAL_BASE);
+    }
+
+
 
     int res = chmod(m_cmd_line[ANOTHER_ARGS], numInOctal);
 
