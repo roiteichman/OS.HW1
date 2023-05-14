@@ -1173,7 +1173,7 @@ void ChmodCommand::execute() {
     int num_in_octal = 0;
 
     int unity_digit = num_not_octal%10;
-    cout << "unity_digit " << unity_digit << endl;
+    cout << "unity_digit: " << unity_digit << endl;
 
     num_in_octal += unity_digit;
 
@@ -1182,8 +1182,9 @@ void ChmodCommand::execute() {
         num_not_octal-=num_not_octal%10;
         num_not_octal/=10;
         int tens_digit = num_not_octal%10;
-        cout << "tens_digit " << unity_digit << endl;
+        cout << "tens_digit: " << unity_digit << endl;
         num_in_octal += ((!hundreds) ? tens_digit * OCTAL_BASE : tens_digit * OCTAL_BASE*OCTAL_BASE);
+        hundreds++;
     }
 
     /*if (len > 2){
@@ -1191,6 +1192,7 @@ void ChmodCommand::execute() {
         num_in_octal += hundreds_digit * (OCTAL_BASE * OCTAL_BASE);
     }
 */
+    //cout << "num_in_octal: " << num_in_octal << endl;
     int res = chmod(m_cmd_line[ANOTHER_ARGS], num_in_octal);
 
     if (res == -1){
