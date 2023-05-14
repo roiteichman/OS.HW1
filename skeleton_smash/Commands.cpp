@@ -54,7 +54,7 @@ const std::string WHITESPACE = " \n\r\t\f\v";
 #define FULL_PERMISSIONS 777
 #define OCTAL_BASE 8
 #define NEGATIVE_NUM -1
-#define PREMISSIONS 0777
+#define PREMISSIONS 07777
 #define TEN 10
 
 
