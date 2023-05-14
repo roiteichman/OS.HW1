@@ -162,7 +162,6 @@ SmallShell::SmallShell() :
     char* res = getcwd(buff, COMMAND_ARGS_MAX_LENGTH);
     if (res == NULL){
         perror ("smash error: getcwd failed");
-        return;
     }
     strcpy(m_p_lastPWD, buff);
 }
@@ -346,10 +345,7 @@ void ExternalCommand::execute() {
     if (pid==0){
         // child
         int res = setpgrp();
-	    if (res == -1){
-            perror ("smash error: setpgrp failed");
-            return;
-        }
+	    if (res == -1) perror ("smash error: setpgrp failed");
 
         if (m_is_complex) {
             char cmd_for_bash[COMMAND_MAX_CHARACTERS];
@@ -359,7 +355,6 @@ void ExternalCommand::execute() {
                 perror("smash error: execl failed");
                 //exit(EXIT_FAILURE);
                 SmallShell::getInstance().setMFinish(true);
-                return;
             }
         }
         else {
@@ -368,7 +363,6 @@ void ExternalCommand::execute() {
                 perror("smash error: execvp failed");
                 //exit(EXIT_FAILURE);
                 SmallShell::getInstance().setMFinish(true);
-                return;
             }
         }
     }
@@ -385,7 +379,6 @@ void ExternalCommand::execute() {
             int res = waitpid(new_job->m_pid ,NULL, WUNTRACED);
 	        if (res == -1){
                 perror("smash error: waitpid failed");
-                return;
             }
             // if there was not Ctrl-Z:
 	        if (new_job->m_state != STOPPED) {
@@ -402,7 +395,6 @@ void ExternalCommand::execute() {
     }
     else{
         perror ("smash error: fork failed");
-        return;
     }
 #endif
 }
@@ -470,10 +462,7 @@ GetCurrDirCommand::GetCurrDirCommand(const char *cmd_line): BuiltInCommand(cmd_l
 void GetCurrDirCommand::execute() {
     char buff[DIR_MAX_LEN] = {0};
     char* res = getcwd(buff, DIR_MAX_LEN);
-    if (res == NULL){
-        perror ("smash error: getcwd failed");
-        return;
-    }
+    if (res == NULL) perror ("smash error: getcwd failed");
     cout << buff << endl;
 }
 
@@ -505,7 +494,6 @@ void ChangeDirCommand::execute() {
     }
     if (getcwd(old_pwd, DIR_MAX_LEN) == NULL) {
         perror ("smash error: getcwd failed");
-        return;
     }
 
     if (chdir(asked_path) != 0){
@@ -555,7 +543,6 @@ void RedirectionCommand::execute() {
         int res11 = dup2(new_screen_fd, 1);
         if (res11 == -1){
             perror("smash error: dup2 failed");
-            return;
         }
         return;
     }
@@ -566,7 +553,6 @@ void RedirectionCommand::execute() {
         int res11 = dup2(new_screen_fd, 1);
         if (res11 == -1){
             perror("smash error: dup2 failed");
-            return;
         }
         return;
     }
@@ -613,7 +599,7 @@ void PipeCommand::execute() {
     int res = pipe(my_pipe);
     if (res == -1){
         perror("smash error: pipe failed");
-        return; //TODO: why this return was deleted?
+        //return;
     }
 
     int out = m_error ? ERR_FD_INDEX : OUT_FD_INDEX;
@@ -622,13 +608,11 @@ void PipeCommand::execute() {
     int stdOutOrErr = dup(out);
     if (stdOutOrErr == -1){
         perror("smash error: dup failed");
-        return;
     }
 
     int res3 = dup2(my_pipe[OUT_FD_INDEX], out);
     if (res3 == -1){
         perror("smash error: dup2 failed");
-        return;
     }
     m_write_cmd->execute();
     // need to close the entrance to the pipe before make the other cmd
@@ -636,33 +620,27 @@ void PipeCommand::execute() {
     int res4 = close(my_pipe[OUT_FD_INDEX]);
     if (res4 == -1){
         perror("smash error: close failed");
-        return;
     }
     int res5 = dup2(stdOutOrErr, out);
     if (res5 == -1){
         perror("smash error: dup2 failed");
-        return;
     }
     int keyboard = dup(IN_FD_INDEX);
     if (keyboard == -1){
         perror("smash error: dup failed");
-        return;
     }
     int res6 = dup2(my_pipe[IN_FD_INDEX], IN_FD_INDEX);
     if (res6 == -1){
         perror("smash error: dup2 failed");
-        return;
     }
     m_read_cmd->execute();
     int res7 = dup2(keyboard, IN_FD_INDEX);
     if (res7 == -1){
         perror("smash error: dup2 failed");
-        return;
     }
     int res8 = close(my_pipe[IN_FD_INDEX]);
     if (res8 == -1){
         perror("smash error: close failed");
-        return;
     }
 #endif
 }
@@ -760,7 +738,6 @@ void JobsList::removeFinishedJobs() {
         pid_t res = waitpid(job->m_pid, NULL, WNOHANG);
 	    if (res == -1){
             perror("smash error: waitpid failed");
-            return;
         }
         else if (res){
             tmp_list.push_back(job);
@@ -942,7 +919,6 @@ void KillCommand::execute() {
 
     if (kill(job_ptr->m_pid, signal_id) == -1){
         perror("smash error: kill failed");
-        return;
     }
     else{
         cout << "signal number " << signal_id << " was sent to pid "<< job_ptr->m_pid << endl;
@@ -1011,7 +987,6 @@ void ForegroundCommand::execute() {
     int res = waitpid(job_ptr->m_pid, NULL, WUNTRACED);
     if (res == -1){
         perror("smash error: waitpid failed");
-        return;
     }
     #endif
 
@@ -1067,10 +1042,7 @@ void BackgroundCommand::execute() {
     job_ptr->m_state = BACKGROUND;
     #ifndef RUN_LOCAL
     int res = kill (job_ptr->m_pid, SIGCONT);
-    if (res == -1){
-        perror("smash error: kill failed");
-        return;
-    }
+    if (res == -1) perror("smash error: kill failed");
     #endif
 }
 
@@ -1136,7 +1108,6 @@ void SetcoreCommand::execute() {
     CPU_SET(core_num,&set);
     if (sched_setaffinity(job_ptr->m_pid, sizeof(set), &set) == -1){
         perror("smash error: sched_setaffinity failed");
-        return;
     }
 #endif
 }
@@ -1163,15 +1134,12 @@ void GetFileTypeCommand::execute() {
         cerr << "smash error: gettype: invalid arguments" << endl;
         return;
     }
-
-
     struct stat sb;
 
     int res = stat(m_cmd_line[1], &sb);
 
     if (res == -1){
         perror("smash error: stat failed");
-        return;
     }
 
     cout << m_cmd_line[1] << "'s type is \"";
@@ -1203,7 +1171,6 @@ void ChmodCommand::execute() {
 
     if (res == -1){
         perror("smash error: chmod failed");
-        return;
     }
 }
 
@@ -1263,7 +1230,6 @@ void TimeoutCommand::execute() {
         else {
             // because its is_nop dont need to do alram, its invalid_args
             cerr << "smash error: timeout: invalid arguments" << endl;
-            return;
         }
 
         // TODO we need this?:
