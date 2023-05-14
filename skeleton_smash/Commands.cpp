@@ -1165,7 +1165,9 @@ void ChmodCommand::execute() {
     int numInOctal = 0;
 
     int unity_digit = m_cmd_line[1][2]-'0';
-    cout << unity_digit << endl;
+    cout << "m_cmd_line[1][2]: " << m_cmd_line[1][2] << endl;
+    cout << "m_cmd_line[1][1]: " << m_cmd_line[1][1] << endl;
+    cout << "m_cmd_line[1][0]: " << m_cmd_line[1][0] << endl;
 
     numInOctal += unity_digit;
 
