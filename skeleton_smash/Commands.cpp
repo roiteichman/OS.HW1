@@ -1166,14 +1166,10 @@ void ChmodCommand::execute() {
         cerr << "smash error: chmod: invalid arguments" << endl;
         return;
     }
-    cout << "stoi(m_cmd_line[1]): " << stoi(m_cmd_line[1]) << endl;
-
-    //int len = strlen(m_cmd_line[1]);
 
     int num_in_octal = 0;
 
     int unity_digit = num_not_octal%10;
-    cout << "unity_digit: " << unity_digit << endl;
 
     num_in_octal += unity_digit;
 
@@ -1182,17 +1178,11 @@ void ChmodCommand::execute() {
         num_not_octal-=num_not_octal%10;
         num_not_octal/=10;
         int tens_digit = num_not_octal%10;
-        cout << "tens_digit: " << tens_digit << endl;
         num_in_octal += ((!hundreds) ? tens_digit * OCTAL_BASE : tens_digit * OCTAL_BASE*OCTAL_BASE);
         hundreds++;
     }
 
-    /*if (len > 2){
-        int hundreds_digit = m_cmd_line[1][2]-'0';
-        num_in_octal += hundreds_digit * (OCTAL_BASE * OCTAL_BASE);
-    }
-*/
-    //cout << "num_in_octal: " << num_in_octal << endl;
+
     int res = chmod(m_cmd_line[ANOTHER_ARGS], num_in_octal);
 
     if (res == -1){
