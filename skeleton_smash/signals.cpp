@@ -18,6 +18,7 @@ void AlarmList::addProcess(const char* cmd_line, pid_t pid, unsigned int time) {
             int res = kill(pid, SIGKILL);
             if (res == -1) {
                 perror("smash error: kill failed");
+                return;
             }
         }
         cout << "smash: " << cmd_line << " timed out!" << endl;
@@ -65,6 +66,7 @@ void AlarmList::removeAlarmedProcess() {
             int res = kill(m_list.begin()->m_pid, SIGKILL);
             if (res == -1) {
                 perror("smash error: kill failed");
+                return;
             }
             cout << "smash: " << m_list.begin()->m_cmd_line << " timed out!" << endl;
         }
@@ -88,6 +90,7 @@ void ctrlZHandler(int sig_num) {
     int res = kill (fg_job_ptr->m_pid, SIGSTOP);
     if (res == -1){
         perror("smash error: kill failed");
+        return;
     }
     #endif
     SmallShell::getInstance().setFgJob(NULL);
@@ -111,6 +114,7 @@ void ctrlCHandler(int sig_num) {
     int res = kill (fg_job_ptr->m_pid, SIGKILL);
     if (res == -1){
         perror("smash error: kill failed");
+        return;
     }
     #endif
     //SmallShell::getInstance().setFgJob(NULL);
