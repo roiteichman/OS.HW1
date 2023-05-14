@@ -181,7 +181,7 @@ Command* m_cmd;
 int m_sec;
  public:
   explicit TimeoutCommand(const char* cmd_line);
-  virtual ~TimeoutCommand() = default;
+  virtual ~TimeoutCommand();
   void execute() override;
 };
 

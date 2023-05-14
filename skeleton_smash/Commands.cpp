@@ -1206,6 +1206,10 @@ TimeoutCommand::TimeoutCommand(const char *cmd_line):BuiltInCommand(cmd_line), m
     m_cmd->setMFullCmdLine(this->m_full_cmd_line);
 }
 
+TimeoutCommand::~TimeoutCommand() noexcept {
+    delete m_cmd;
+}
+
 void TimeoutCommand::execute() {
     if (m_sec < 0 || m_cmd == NULL){
         cerr << "smash error: timeout: invalid arguments" << endl;
