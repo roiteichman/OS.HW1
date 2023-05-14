@@ -1158,6 +1158,7 @@ void ChmodCommand::execute() {
         cerr << "smash error: chmod: invalid arguments" << endl;
         return;
     }
+    cout << "stoi(m_cmd_line[1]): " << stoi(m_cmd_line[1]) << endl;
 
     int len = strlen(m_cmd_line[1]);
 
