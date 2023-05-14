@@ -1140,6 +1140,7 @@ void GetFileTypeCommand::execute() {
 
     if (res == -1){
         perror("smash error: stat failed");
+        return;
     }
 
     cout << m_cmd_line[1] << "'s type is \"";
