@@ -1160,24 +1160,26 @@ void ChmodCommand::execute() {
     }
 
     int len = strlen(m_cmd_line[1]);
+    cout << len << endl;
 
     int numInOctal = 0;
 
     int unity_digit = m_cmd_line[1][2]-'0';
+    cout << unity_digit << endl;
 
     numInOctal += unity_digit;
 
     if (len > 1){
         int tens_digit = m_cmd_line[1][1]-'0';
+        cout << tens_digit << endl;
         numInOctal += tens_digit*OCTAL_BASE;
     }
 
     if (len > 2){
         int hundreds_digit = m_cmd_line[1][0]-'0';
+        cout << hundreds_digit << endl;
         numInOctal += hundreds_digit*(OCTAL_BASE*OCTAL_BASE);
     }
-
-
 
     int res = chmod(m_cmd_line[ANOTHER_ARGS], numInOctal);
 
