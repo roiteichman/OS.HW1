@@ -1182,7 +1182,7 @@ void ChmodCommand::execute() {
         num_not_octal-=num_not_octal%10;
         num_not_octal/=10;
         int tens_digit = num_not_octal%10;
-        cout << "tens_digit: " << unity_digit << endl;
+        cout << "tens_digit: " << tens_digit << endl;
         num_in_octal += ((!hundreds) ? tens_digit * OCTAL_BASE : tens_digit * OCTAL_BASE*OCTAL_BASE);
         hundreds++;
     }
