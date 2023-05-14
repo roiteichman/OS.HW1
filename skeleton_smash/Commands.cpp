@@ -1158,28 +1158,40 @@ void ChmodCommand::execute() {
         cerr << "smash error: chmod: invalid arguments" << endl;
         return;
     }
-    cout << "stoi(m_cmd_line[1]): " << stoi(m_cmd_line[1]) << endl;
+    int num_not_octal = 0;
+    try {
+        num_not_octal = stoi(m_cmd_line[1]);
+    }
+    catch (const invalid_argument &invalidArgument) {
+        cerr << "smash error: chmod: invalid arguments" << endl;
+        return;
+    }
+    //cout << "stoi(m_cmd_line[1]): " << stoi(m_cmd_line[1]) << endl;
+
+
 
     int len = strlen(m_cmd_line[1]);
 
-    int numInOctal = 0;
+    int num_in_octal = 0;
 
-    int unity_digit = m_cmd_line[1][0]-'0';
+    int unity_digit = num_not_octal%10;
 
+    num_in_octal += unity_digit;
 
-    numInOctal += unity_digit;
-
-    if (len > 1){
-        int tens_digit = m_cmd_line[1][1]-'0';
-        numInOctal += tens_digit*OCTAL_BASE;
+    int hundreds = 0;
+    while (num_not_octal > 10){
+        num_not_octal-=num_not_octal%10;
+        num_not_octal/=10;
+        int tens_digit = num_not_octal%10;
+        num_in_octal += ((!hundreds) ? tens_digit * OCTAL_BASE : tens_digit * OCTAL_BASE*OCTAL_BASE);
     }
 
-    if (len > 2){
+    /*if (len > 2){
         int hundreds_digit = m_cmd_line[1][2]-'0';
-        numInOctal += hundreds_digit*(OCTAL_BASE*OCTAL_BASE);
+        num_in_octal += hundreds_digit * (OCTAL_BASE * OCTAL_BASE);
     }
-
-    int res = chmod(m_cmd_line[ANOTHER_ARGS], numInOctal);
+*/
+    int res = chmod(m_cmd_line[ANOTHER_ARGS], num_in_octal);
 
     if (res == -1){
         perror("smash error: chmod failed");
