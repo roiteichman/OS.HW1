@@ -156,7 +156,7 @@ SmallShell methods:
 --------------------*/
 
 SmallShell::SmallShell() :
-    m_fg_job(NULL), m_finish(false), m_did_first_cd(false) {
+    m_did_first_cd(false), m_fg_job(NULL), m_finish(false) {
     strcpy(m_prompt, "smash");
     char buff[COMMAND_ARGS_MAX_LENGTH] = {0};
     char* res = getcwd(buff, COMMAND_ARGS_MAX_LENGTH);
@@ -390,7 +390,7 @@ void ExternalCommand::execute() {
         // background
         else{
             new_job->m_state=BACKGROUND;
-            int index = SmallShell::getInstance().getMJobList().addNewJob(new_job);
+            SmallShell::getInstance().getMJobList().addNewJob(new_job);
         }
     }
     else{
@@ -472,8 +472,7 @@ ChangeDirCommand::ChangeDirCommand(const char* cmd_line): BuiltInCommand(cmd_lin
 
 void ChangeDirCommand::execute() {
 
-    if (m_cmd_line[1] == NULL ||  strcmp(m_cmd_line[1], "-") && m_cmd_line[ANOTHER_ARGS] != NULL
-        || m_cmd_line[1] != NULL && m_cmd_line[ANOTHER_ARGS] != NULL ){
+    if (m_cmd_line[ANOTHER_ARGS] != NULL){
         cerr << "smash error: cd: too many arguments" << endl;
         return;
     }
@@ -575,7 +574,8 @@ void RedirectionCommand::execute() {
 }
 
 PipeCommand::PipeCommand(const char *cmd_line, int separate): Command(cmd_line),
-m_error(cmd_line[separate+1]=='&'), m_read_cmd(NULL), m_write_cmd(NULL){
+    m_write_cmd(NULL), m_read_cmd(NULL), m_error(cmd_line[separate+1]=='&')
+{
     int separate_len = m_error ? LONG_PIPE_SIGN : 1;
     char temp_cmd[COMMAND_MAX_CHARACTERS];
     strcpy(temp_cmd,cmd_line);
@@ -1152,8 +1152,8 @@ ChmodCommand::ChmodCommand(const char *cmd_line): BuiltInCommand(cmd_line) {}
 void ChmodCommand::execute() {
     if (m_cmd_line[1] == NULL || !_isNum(m_cmd_line[1])
         || m_cmd_line[ANOTHER_ARGS] == NULL || m_cmd_line[ANOTHER_ARGS + 1] != NULL
-        || _isNum(m_cmd_line[1]) && stoi(m_cmd_line[1]) < 0
-        || _isNum(m_cmd_line[1]) && stoi(m_cmd_line[1]) > FULL_PERMISSIONS) {
+        || (_isNum(m_cmd_line[1]) && stoi(m_cmd_line[1]) < 0)
+        || (_isNum(m_cmd_line[1]) && stoi(m_cmd_line[1]) > FULL_PERMISSIONS)) {
         cerr << "smash error: chmod: invalid arguments" << endl;
         return;
     }
