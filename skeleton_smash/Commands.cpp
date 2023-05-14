@@ -51,10 +51,10 @@ const std::string WHITESPACE = " \n\r\t\f\v";
 #define IN_FD_INDEX 0
 #define OUT_FD_INDEX 1
 #define ERR_FD_INDEX 2
-#define FULL_PERMISSIONS 777
+#define FULL_PERMISSIONS 7777
 #define OCTAL_BASE 8
 #define NEGATIVE_NUM -1
-#define PREMISSIONS 07777
+#define PREMISSIONS 0777
 #define TEN 10
 #define TWO 2
 
