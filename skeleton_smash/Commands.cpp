@@ -1222,8 +1222,8 @@ void ChmodCommand::execute() {
     cout << "num_not_octal: " << num_not_octal << endl;
 
     if (sign){
-        next_permissions-=num_not_octal;
-        cout << "next_permissions" << next_permissions << endl;
+        next_permissions+=num_not_octal;
+        cout << "next_permissions: " << next_permissions << endl;
     }
 
     int num_in_octal = 0;
