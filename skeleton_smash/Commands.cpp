@@ -1215,10 +1215,15 @@ void ChmodCommand::execute() {
 
     int current_permissions = sb.st_mode-ZERO_PERMISSIONS;
 
+    cout << "current_permissions: " << current_permissions << endl;
+
     int next_permissions=current_permissions;
+
+    cout << "num_not_octal: " << num_not_octal << endl;
 
     if (sign){
         next_permissions-=num_not_octal;
+        cout << "next_permissions" << next_permissions << endl;
     }
 
     int num_in_octal = 0;
