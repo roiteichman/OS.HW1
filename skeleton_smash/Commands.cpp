@@ -1211,13 +1211,11 @@ void ChmodCommand::execute() {
 
     struct stat sb;
 
-    int r = stat(m_cmd_line[ANOTHER_ARGS], &sb);
+    //int r = stat(m_cmd_line[ANOTHER_ARGS], &sb);
 
     int current_permissions = sb.st_mode-ZERO_PERMISSIONS;
 
     cout << "current_permissions: " << current_permissions << endl;
-
-    //int next_permissions=current_permissions;
 
     cout << "num_not_octal: " << num_not_octal << endl;
 
@@ -1247,11 +1245,6 @@ void ChmodCommand::execute() {
             num_in_octal += tens_digit * OCTAL_BASE*OCTAL_BASE*OCTAL_BASE;
         }
     }
-
-    cout << "num_in_octal: " << num_in_octal << endl;
-
-    cout << "current_permissions-num_in_octal: " << current_permissions-num_in_octal << endl;
-
 
     // if sign num so mul in -1
     int res = chmod(m_cmd_line[ANOTHER_ARGS], sign ? current_permissions-num_in_octal : num_in_octal);
