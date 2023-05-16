@@ -1212,7 +1212,7 @@ void ChmodCommand::execute() {
 
     int r = stat(m_cmd_line[ANOTHER_ARGS], &sb);
 
-    int current_permissions = sb.st_mode-8000;
+    int current_permissions = sb.st_mode-32768;
 
     cout << "current_permissions: " << current_permissions << endl;
 
