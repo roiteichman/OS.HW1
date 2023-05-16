@@ -3,7 +3,6 @@
 
 #include <vector>
 #include <list>
-//#define NDEBUG
 #include <assert.h>
 #include <string.h>
 
