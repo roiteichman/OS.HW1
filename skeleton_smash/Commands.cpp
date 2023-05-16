@@ -1179,7 +1179,7 @@ ChmodCommand::ChmodCommand(const char *cmd_line): BuiltInCommand(cmd_line) {}
 
 void ChmodCommand::execute() {
     try{
-        stoi(m_cmd_line[1];
+        stoi(m_cmd_line[1]);
     }
     catch (const invalid_argument &invalidArgument) {
         cerr << "smash error: chmod: invalid arguments" << endl;
