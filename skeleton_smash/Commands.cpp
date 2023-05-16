@@ -161,7 +161,8 @@ SmallShell::SmallShell() :
         m_did_first_cd(false), m_fg_job(NULL), m_finish(false) {
     strcpy(m_prompt, "smash");
     char buff[COMMAND_ARGS_MAX_LENGTH] = {0};
-    if (getcwd(buff, COMMAND_ARGS_MAX_LENGTH) == NULL) {
+    char* res = getcwd(buff, COMMAND_ARGS_MAX_LENGTH);
+    if (res == NULL){
         perror ("smash error: getcwd failed");
     }
     strcpy(m_p_lastPWD, buff);
@@ -345,25 +346,27 @@ void ExternalCommand::execute() {
     pid_t pid = fork();
     if (pid==0){
         // child
-        if (setpgrp() == -1) {
-            perror ("smash error: setpgrp failed");
-        }
+        int res = setpgrp();
+        if (res == -1) perror ("smash error: setpgrp failed");
 
-        else if (m_is_complex) {
+        if (m_is_complex) {
             char cmd_for_bash[COMMAND_MAX_CHARACTERS];
             cmdForBash (m_cmd_line, cmd_for_bash);
-            if (execl("/bin/bash", "bash", "-c", cmd_for_bash, NULL) == -1){
+            int result = execl("/bin/bash", "bash", "-c", cmd_for_bash, NULL);
+            if (result == -1){
                 perror("smash error: execl failed");
                 //exit(EXIT_FAILURE);
+                SmallShell::getInstance().setMFinish(true);
             }
         }
         else {
-            if (execvp(m_cmd_line[0], m_cmd_line) == -1){
+            int res = execvp(m_cmd_line[0], m_cmd_line);
+            if (res == -1){
                 perror("smash error: execvp failed");
                 //exit(EXIT_FAILURE);
+                SmallShell::getInstance().setMFinish(true);
             }
         }
-        SmallShell::getInstance().setMFinish(true);
     }
     else if (pid>0){
         Job* new_job = new Job(-1, pid, FOREGROUND, this->m_full_cmd_line);
@@ -375,18 +378,18 @@ void ExternalCommand::execute() {
         // foreground
         if (!m_is_back_ground){
             SmallShell::getInstance().setFgJob(new_job);
-            if (waitpid(new_job->m_pid ,NULL, WUNTRACED) == -1){
+            int res = waitpid(new_job->m_pid ,NULL, WUNTRACED);
+            if (res == -1){
                 perror("smash error: waitpid failed");
             }
             // if there was not Ctrl-Z:
-            else if (new_job->m_state != STOPPED) {
+            if (new_job->m_state != STOPPED) {
                 delete new_job; // TODO if the job only stopped
                 SmallShell::getInstance().setFgJob(NULL);
             }
 
         }
-
-        // background
+            // background
         else{
             new_job->m_state=BACKGROUND;
             SmallShell::getInstance().getMJobList().addNewJob(new_job);
@@ -460,10 +463,8 @@ GetCurrDirCommand::GetCurrDirCommand(const char *cmd_line): BuiltInCommand(cmd_l
 
 void GetCurrDirCommand::execute() {
     char buff[DIR_MAX_LEN] = {0};
-    if (getcwd(buff, DIR_MAX_LEN) == NULL) {
-        perror ("smash error: getcwd failed");
-        return;
-    }
+    char* res = getcwd(buff, DIR_MAX_LEN);
+    if (res == NULL) perror ("smash error: getcwd failed");
     cout << buff << endl;
 }
 
@@ -495,7 +496,6 @@ void ChangeDirCommand::execute() {
     }
     if (getcwd(old_pwd, DIR_MAX_LEN) == NULL) {
         perror ("smash error: getcwd failed");
-        return;
     }
 
     if (chdir(asked_path) != 0){
@@ -539,18 +539,21 @@ void RedirectionCommand::execute() {
         return;
     }
     // close the screen
-    if (close(1) == -1){
+    int res = close(1);
+    if (res == -1){
         perror("smash error: close failed");
-        if (dup2(new_screen_fd, 1) == -1){
+        int res11 = dup2(new_screen_fd, 1);
+        if (res11 == -1){
             perror("smash error: dup2 failed");
         }
         return;
     }
     // open new file to write, it means its get the fd 1
-    int res = open(m_path, m_append ? (O_WRONLY | O_CREAT | O_APPEND) : (O_WRONLY | O_CREAT | O_TRUNC), PREMISSIONS);
-    if (res == -1){
+    int res2 = open(m_path, m_append ? (O_WRONLY | O_CREAT | O_APPEND) : (O_WRONLY | O_CREAT | O_TRUNC), PREMISSIONS);
+    if (res2 == -1){
         perror("smash error: open failed");
-        if (dup2(new_screen_fd, 1) == -1){
+        int res11 = dup2(new_screen_fd, 1);
+        if (res11 == -1){
             perror("smash error: dup2 failed");
         }
         return;
@@ -558,12 +561,14 @@ void RedirectionCommand::execute() {
     // the cmd is prints to the cout == FDT[1] by default, so now prints to the pipe
     m_cmd->execute();
     // return FDT[1] to be the screen
-    if (dup2(new_screen_fd, 1) == -1){
+    int res3 = dup2(new_screen_fd, 1);
+    if (res3 == -1){
         perror("smash error: dup2 failed");
         return;
     }
     // close the temp fd that hold the copy of the screen
-    if (close(new_screen_fd) == -1){
+    int res4 = close(new_screen_fd);
+    if (res4 == -1){
         perror("smash error: close failed");
         return;
     }
@@ -593,101 +598,50 @@ PipeCommand::~PipeCommand() noexcept {
 void PipeCommand::execute() {
 #ifndef RUN_LOCAL
     int my_pipe[2];
-    if (pipe(my_pipe) == -1){
-            perror("smash error: pipe failed");
-            return;
+    int res = pipe(my_pipe);
+    if (res == -1){
+        perror("smash error: pipe failed");
+        //return;
     }
 
     int out = m_error ? ERR_FD_INDEX : OUT_FD_INDEX;
 
+
     int stdOutOrErr = dup(out);
     if (stdOutOrErr == -1){
-            perror("smash error: dup failed");
-            if (close(my_pipe[OUT_FD_INDEX]) == -1){
-                perror("smash error: close failed");
-            }
-            if (close(my_pipe[IN_FD_INDEX]) == -1){
-                perror("smash error: close failed");
-            }
-            return;
+        perror("smash error: dup failed");
     }
 
-    if (dup2(my_pipe[OUT_FD_INDEX], out) == -1){
-            perror("smash error: dup2 failed");
-            if (close(my_pipe[OUT_FD_INDEX]) == -1){
-                perror("smash error: close failed");
-            }
-            if (close(my_pipe[IN_FD_INDEX]) == -1){
-                perror("smash error: close failed");
-            }
-            if (close(stdOutOrErr) == -1) {
-                perror("smash error: close failed");
-            }
-            return;
+    int res3 = dup2(my_pipe[OUT_FD_INDEX], out);
+    if (res3 == -1){
+        perror("smash error: dup2 failed");
     }
-    // do the first command:
     m_write_cmd->execute();
     // need to close the entrance to the pipe before make the other cmd
     // else the pipe is open after execv and the other cmd wait for input
-    if (dup2(stdOutOrErr, out) == -1){
-            perror("smash error: dup2 failed");
-            if (close(my_pipe[OUT_FD_INDEX]) == -1){
-                perror("smash error: close failed");
-            }
-            if (close(my_pipe[IN_FD_INDEX]) == -1){
-                perror("smash error: close failed");
-            }
-            if (close(stdOutOrErr) == -1) {
-                perror("smash error: close failed");
-            }
-            return;
-    }
-    if (close(my_pipe[OUT_FD_INDEX]) == -1){
-            perror("smash error: close failed");
-            if (close(my_pipe[IN_FD_INDEX]) == -1){
-                perror("smash error: close failed");
-            }
-            if (close(stdOutOrErr) == -1) {
-                perror("smash error: close failed");
-            }
-            return;
-    }
-    if (close(stdOutOrErr) == -1) {
-            perror("smash error: close failed");
-            if (close(my_pipe[IN_FD_INDEX]) == -1){
-                perror("smash error: close failed");
-            }
-            return;
-    }
-
-
-    int keyboard = dup(IN_FD_INDEX);
-    if (keyboard == -1){
-            perror("smash error: dup failed");
-            if (close(my_pipe[IN_FD_INDEX]) == -1){
-                perror("smash error: close failed");
-            }
-            return;
-    }
-    if (dup2(my_pipe[IN_FD_INDEX], IN_FD_INDEX) == -1){
-            perror("smash error: dup2 failed");
-            if (close(my_pipe[IN_FD_INDEX]) == -1){
-                perror("smash error: close failed");
-            }
-            if (close (keyboard) == -1) {
-                perror("smash error: close failed");
-            }
-            return;
-    }
-    //do the second command:
-    m_read_cmd->execute();
-    if (dup2(keyboard, IN_FD_INDEX) == -1){
-        perror("smash error: dup2 failed");
-    }
-    if (close (keyboard) == -1) {
+    int res4 = close(my_pipe[OUT_FD_INDEX]);
+    if (res4 == -1){
         perror("smash error: close failed");
     }
-    if (close(my_pipe[IN_FD_INDEX]) == -1){
+    int res5 = dup2(stdOutOrErr, out);
+    if (res5 == -1){
+        perror("smash error: dup2 failed");
+    }
+    int keyboard = dup(IN_FD_INDEX);
+    if (keyboard == -1){
+        perror("smash error: dup failed");
+    }
+    int res6 = dup2(my_pipe[IN_FD_INDEX], IN_FD_INDEX);
+    if (res6 == -1){
+        perror("smash error: dup2 failed");
+    }
+    m_read_cmd->execute();
+    int res7 = dup2(keyboard, IN_FD_INDEX);
+    if (res7 == -1){
+        perror("smash error: dup2 failed");
+    }
+    int res8 = close(my_pipe[IN_FD_INDEX]);
+    if (res8 == -1){
         perror("smash error: close failed");
     }
 #endif
@@ -820,9 +774,7 @@ void JobsList::removeJobById(int job_id) {
             return;
         }
     }
-#ifndef NDEBUG
     cerr << "the job by id " << job_id << " is not exist" << endl;
-#endif
     assert (false);
 }
 
@@ -931,10 +883,6 @@ void KillCommand::execute() {
             cerr << "smash error: kill: invalid arguments" << endl;
             return;
         }
-        catch (const out_of_range &outOfRange) {
-            cerr << "smash error: kill: invalid arguments" << endl;
-            return;
-        }
         // get the job, and check if it is exist:
         job_ptr = SmallShell::getInstance().getMJobList().getJobById(job_id);
         if (job_ptr == NULL) {
@@ -965,10 +913,6 @@ void KillCommand::execute() {
         signal_id = stoi(string(m_cmd_line[1]+1));
     }
     catch (const invalid_argument& invalidArgument){
-        cerr << "smash error: kill: invalid arguments" << endl;
-        return;
-    }
-    catch (const out_of_range &outOfRange) {
         cerr << "smash error: kill: invalid arguments" << endl;
         return;
     }
@@ -1018,10 +962,6 @@ void ForegroundCommand::execute() {
             cerr << "smash error: fg: invalid arguments" << endl;
             return;
         }
-        catch (const out_of_range &outOfRange) {
-            cerr << "smash error: fg: invalid arguments" << endl;
-            return;
-        }
         job_ptr = SmallShell::getInstance().getMJobList().getJobById(job_id);
         if (job_ptr == NULL) {
             cerr << "smash error: fg: job-id " << job_id << " does not exist" << endl;
@@ -1037,7 +977,8 @@ void ForegroundCommand::execute() {
     // if STOPPED need to send SIGCONT (runs like BG)
 #ifndef RUN_LOCAL
     if (job_ptr->m_state == STOPPED) {
-        if (kill (job_ptr->m_pid, SIGCONT) == -1){
+        int res = kill (job_ptr->m_pid, SIGCONT);
+        if (res == -1){
             perror("smash error: kill failed");
             return;
         }
@@ -1045,7 +986,8 @@ void ForegroundCommand::execute() {
 
     job_ptr->m_state = FOREGROUND;
     // wait for "moving" it to the FG
-    if (waitpid(job_ptr->m_pid, NULL, WUNTRACED) == -1){
+    int res = waitpid(job_ptr->m_pid, NULL, WUNTRACED);
+    if (res == -1){
         perror("smash error: waitpid failed");
     }
 #endif
@@ -1087,10 +1029,6 @@ void BackgroundCommand::execute() {
             cerr << "smash error: bg: invalid arguments" << endl;
             return;
         }
-        /*catch (const out_of_range &outOfRange) {
-            cerr << "smash error: bg: invalid arguments" << endl;
-            return;
-        }*/
         job_ptr = SmallShell::getInstance().getMJobList().getJobById(job_id);
         if (job_ptr == NULL) {
             cerr << "smash error: bg: job-id " << job_id << " does not exist" << endl;
@@ -1105,9 +1043,8 @@ void BackgroundCommand::execute() {
     job_ptr->print2();
     job_ptr->m_state = BACKGROUND;
 #ifndef RUN_LOCAL
-    if (kill (job_ptr->m_pid, SIGCONT) == -1){
-        perror("smash error: kill failed");
-    }
+    int res = kill (job_ptr->m_pid, SIGCONT);
+    if (res == -1) perror("smash error: kill failed");
 #endif
 }
 
@@ -1126,11 +1063,9 @@ void SetcoreCommand::execute() {
             job_id = stoi(string(m_cmd_line[1]));
         }
         catch (const invalid_argument &invalidArgument) {
-            //after that we will print error message and return
             invalid_arguments = true;
-        }
-        catch (const out_of_range &outOfRange) {
-            invalid_arguments = true;
+            //cerr << "smash error: setcore: invalid arguments" << endl;
+            //return;
         }
         // get the job, and check if it is exist:
         if (!invalid_arguments) {
@@ -1148,10 +1083,6 @@ void SetcoreCommand::execute() {
             core_num = stoi(string(m_cmd_line[ANOTHER_ARGS]));
         }
         catch (const invalid_argument &invalidArgument) {
-            cerr << "smash error: setcore: invalid arguments" << endl;
-            return;
-        }
-        catch (const out_of_range &outOfRange) {
             cerr << "smash error: setcore: invalid arguments" << endl;
             return;
         }
@@ -1206,7 +1137,10 @@ void GetFileTypeCommand::execute() {
         return;
     }
     struct stat sb;
-    if (stat(m_cmd_line[1], &sb) == -1){
+
+    int res = stat(m_cmd_line[1], &sb);
+
+    if (res == -1){
         perror("smash error: stat failed");
         return;
     }
@@ -1219,18 +1153,6 @@ void GetFileTypeCommand::execute() {
 ChmodCommand::ChmodCommand(const char *cmd_line): BuiltInCommand(cmd_line) {}
 
 void ChmodCommand::execute() {
-    try{
-        stoi(string(m_cmd_line[1]));
-    }
-    catch (const invalid_argument &invalidArgument) {
-        cerr << "smash error: chmod: invalid arguments" << endl;
-        return;
-    }
-    catch (const out_of_range &outOfRange) {
-        cerr << "smash error: chmod: invalid arguments" << endl;
-        return;
-    }
-
     if (m_cmd_line[1] == NULL || !_isNum(m_cmd_line[1])
         || m_cmd_line[ANOTHER_ARGS] == NULL || m_cmd_line[ANOTHER_ARGS + 1] != NULL
         || (_isNum(m_cmd_line[1]) && stoi(m_cmd_line[1]) < 0)
@@ -1270,7 +1192,9 @@ void ChmodCommand::execute() {
         }
     }
 
-    if (chmod(m_cmd_line[ANOTHER_ARGS], num_in_octal) == -1){
+    int res = chmod(m_cmd_line[ANOTHER_ARGS], num_in_octal);
+
+    if (res == -1){
         perror("smash error: chmod failed");
     }
 }
@@ -1285,11 +1209,7 @@ TimeoutCommand::TimeoutCommand(const char *cmd_line):BuiltInCommand(cmd_line), m
             m_sec=stoi(string(m_cmd_line[1]));
         }
         catch (const invalid_argument &invalidArgument) {
-            cerr << "smash error: timeout: invalid arguments" << endl;
-            return;
-        }
-        catch (const out_of_range &outOfRange) {
-            cerr << "smash error: timeout: invalid arguments" << endl;
+            cerr << "smash error: TimeoutCommand: invalid arguments" << endl;
             return;
         }
     }
@@ -1336,6 +1256,7 @@ void TimeoutCommand::execute() {
             // because its is_nop dont need to do alram, its invalid_args
             cerr << "smash error: timeout: invalid arguments" << endl;
         }
+
         // TODO we need this?:
         //if (m_sec == 0) {
         //    return;
