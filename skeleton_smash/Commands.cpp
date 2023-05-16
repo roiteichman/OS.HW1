@@ -1087,10 +1087,10 @@ void BackgroundCommand::execute() {
             cerr << "smash error: bg: invalid arguments" << endl;
             return;
         }
-        catch (const out_of_range &outOfRange) {
+        /*catch (const out_of_range &outOfRange) {
             cerr << "smash error: bg: invalid arguments" << endl;
             return;
-        }
+        }*/
         job_ptr = SmallShell::getInstance().getMJobList().getJobById(job_id);
         if (job_ptr == NULL) {
             cerr << "smash error: bg: job-id " << job_id << " does not exist" << endl;
