@@ -15,9 +15,9 @@ void AlarmList::addProcess(const char* cmd_line, pid_t pid, unsigned int time) {
     if (time == 0) {
         cout << "smash: got an alarm" << endl;
         if (pid > 0) {
-            int res = kill(pid, SIGKILL);
-            if (res == -1) {
+            if (kill(pid, SIGKILL) == -1) {
                 perror("smash error: kill failed");
+                return;
             }
         }
         cout << "smash: " << cmd_line << " timed out!" << endl;
@@ -62,11 +62,12 @@ void AlarmList::removeAlarmedProcess() {
         SmallShell::getInstance().getMJobList().removeFinishedJobs();
         // wait - to check if the job is running:
         if (waitpid(m_list.begin()->m_pid, NULL, WNOHANG) == 0) {
-            int res = kill(m_list.begin()->m_pid, SIGKILL);
-            if (res == -1) {
+            if (kill(m_list.begin()->m_pid, SIGKILL) == -1) {
                 perror("smash error: kill failed");
             }
-            cout << "smash: " << m_list.begin()->m_cmd_line << " timed out!" << endl;
+            else {
+                cout << "smash: " << m_list.begin()->m_cmd_line << " timed out!" << endl;
+            }
         }
         m_list.pop_front();
     }
@@ -74,7 +75,6 @@ void AlarmList::removeAlarmedProcess() {
         alarm(m_list.begin()->m_time);
         m_list.begin()->m_time = 0;
     }
-
 #endif
 }
 
@@ -85,9 +85,9 @@ void ctrlZHandler(int sig_num) {
     if (fg_job_ptr == NULL) return;
 
     #ifndef RUN_LOCAL
-    int res = kill (fg_job_ptr->m_pid, SIGSTOP);
-    if (res == -1){
+    if (kill (fg_job_ptr->m_pid, SIGSTOP) == -1){
         perror("smash error: kill failed");
+        return;
     }
     #endif
     SmallShell::getInstance().setFgJob(NULL);
@@ -108,12 +108,11 @@ void ctrlCHandler(int sig_num) {
     if (fg_job_ptr == NULL) return;
     #ifndef RUN_LOCAL
 
-    int res = kill (fg_job_ptr->m_pid, SIGKILL);
-    if (res == -1){
+    if (kill (fg_job_ptr->m_pid, SIGKILL) == -1){
         perror("smash error: kill failed");
+        return;
     }
     #endif
-    //SmallShell::getInstance().setFgJob(NULL);
     cout << "smash: process " << fg_job_ptr->m_pid << " was killed" << endl;
 }
 
