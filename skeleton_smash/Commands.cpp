@@ -883,6 +883,10 @@ void KillCommand::execute() {
             cerr << "smash error: kill: invalid arguments" << endl;
             return;
         }
+        catch (const out_of_range &outOfRange) {
+            cerr << "smash error: kill: invalid arguments" << endl;
+            return;
+        }
         // get the job, and check if it is exist:
         job_ptr = SmallShell::getInstance().getMJobList().getJobById(job_id);
         if (job_ptr == NULL) {
@@ -913,6 +917,10 @@ void KillCommand::execute() {
         signal_id = stoi(string(m_cmd_line[1]+1));
     }
     catch (const invalid_argument& invalidArgument){
+        cerr << "smash error: kill: invalid arguments" << endl;
+        return;
+    }
+    catch (const out_of_range& outOfRange){
         cerr << "smash error: kill: invalid arguments" << endl;
         return;
     }
@@ -959,6 +967,10 @@ void ForegroundCommand::execute() {
             job_id = stoi(string(m_cmd_line[1]));
         }
         catch (const invalid_argument& invalidArgument){
+            cerr << "smash error: fg: invalid arguments" << endl;
+            return;
+        }
+        catch (const out_of_range& outOfRange){
             cerr << "smash error: fg: invalid arguments" << endl;
             return;
         }
@@ -1029,6 +1041,10 @@ void BackgroundCommand::execute() {
             cerr << "smash error: bg: invalid arguments" << endl;
             return;
         }
+        catch (const out_of_range& outOfRange){
+            cerr << "smash error: bg: invalid arguments" << endl;
+            return;
+        }
         job_ptr = SmallShell::getInstance().getMJobList().getJobById(job_id);
         if (job_ptr == NULL) {
             cerr << "smash error: bg: job-id " << job_id << " does not exist" << endl;
@@ -1067,6 +1083,11 @@ void SetcoreCommand::execute() {
             //cerr << "smash error: setcore: invalid arguments" << endl;
             //return;
         }
+        catch (const out_of_range &outOfRange) {
+            invalid_arguments = true;
+            //cerr << "smash error: setcore: invalid arguments" << endl;
+            //return;
+        }
         // get the job, and check if it is exist:
         if (!invalid_arguments) {
             job_ptr = SmallShell::getInstance().getMJobList().getJobById(job_id);
@@ -1083,6 +1104,10 @@ void SetcoreCommand::execute() {
             core_num = stoi(string(m_cmd_line[ANOTHER_ARGS]));
         }
         catch (const invalid_argument &invalidArgument) {
+            cerr << "smash error: setcore: invalid arguments" << endl;
+            return;
+        }
+        catch (const out_of_range &outOfRange) {
             cerr << "smash error: setcore: invalid arguments" << endl;
             return;
         }
@@ -1153,6 +1178,18 @@ void GetFileTypeCommand::execute() {
 ChmodCommand::ChmodCommand(const char *cmd_line): BuiltInCommand(cmd_line) {}
 
 void ChmodCommand::execute() {
+    try{
+        stoi(m_cmd_line[1];
+    }
+    catch (const invalid_argument &invalidArgument) {
+        cerr << "smash error: chmod: invalid arguments" << endl;
+        return;
+    }
+    catch (const out_of_range &outOfRange) {
+        cerr << "smash error: chmod: invalid arguments" << endl;
+        return;
+    }
+
     if (m_cmd_line[1] == NULL || !_isNum(m_cmd_line[1])
         || m_cmd_line[ANOTHER_ARGS] == NULL || m_cmd_line[ANOTHER_ARGS + 1] != NULL
         || (_isNum(m_cmd_line[1]) && stoi(m_cmd_line[1]) < 0)
@@ -1209,7 +1246,11 @@ TimeoutCommand::TimeoutCommand(const char *cmd_line):BuiltInCommand(cmd_line), m
             m_sec=stoi(string(m_cmd_line[1]));
         }
         catch (const invalid_argument &invalidArgument) {
-            cerr << "smash error: TimeoutCommand: invalid arguments" << endl;
+            cerr << "smash error: timeout: invalid arguments" << endl;
+            return;
+        }
+        catch (const out_of_range &outOfRange) {
+            cerr << "smash error: timeout: invalid arguments" << endl;
             return;
         }
     }
