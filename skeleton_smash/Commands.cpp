@@ -1192,7 +1192,7 @@ void ChmodCommand::execute() {
 
     if (m_cmd_line[1] == NULL || !_isNum(m_cmd_line[1])
         || m_cmd_line[ANOTHER_ARGS] == NULL || m_cmd_line[ANOTHER_ARGS + 1] != NULL
-        || (_isNum(m_cmd_line[1]) && stoi(m_cmd_line[1]) < 0)
+        || (_isNum(m_cmd_line[1]) && stoi(m_cmd_line[1]) < -FULL_PERMISSIONS)
         || (_isNum(m_cmd_line[1]) && stoi(m_cmd_line[1]) > FULL_PERMISSIONS)) {
         cerr << "smash error: chmod: invalid arguments" << endl;
         return;
