@@ -52,6 +52,7 @@ const std::string WHITESPACE = " \n\r\t\f\v";
 #define OUT_FD_INDEX 1
 #define ERR_FD_INDEX 2
 #define FULL_PERMISSIONS 7777
+#define ZERO_PERMISSIONS 32768
 #define OCTAL_BASE 8
 #define NEGATIVE_NUM -1
 #define PREMISSIONS 0777
@@ -1212,10 +1213,13 @@ void ChmodCommand::execute() {
 
     int r = stat(m_cmd_line[ANOTHER_ARGS], &sb);
 
-    int current_permissions = sb.st_mode-32768;
+    int current_permissions = sb.st_mode-ZERO_PERMISSIONS;
 
-    cout << "current_permissions: " << current_permissions << endl;
+    int next_permissions=current_permissions;
 
+    if (sign){
+        next_permissions-=num_not_octal;
+    }
 
     int num_in_octal = 0;
 
@@ -1241,7 +1245,7 @@ void ChmodCommand::execute() {
     }
 
     // if sign num so mul in -1
-    int res = chmod(m_cmd_line[ANOTHER_ARGS], sign ? num_not_octal : num_in_octal);
+    int res = chmod(m_cmd_line[ANOTHER_ARGS], sign ? next_permissions : num_in_octal);
 
     if (res == -1){
         perror("smash error: chmod failed");
