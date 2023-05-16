@@ -1208,6 +1208,13 @@ void ChmodCommand::execute() {
 
     bool sign = num_not_octal<0;
 
+    struct stat sb;
+
+    int current_permissions = sb.st_mode;
+
+    cout << "current_permissions: " << current_permissions << endl;
+
+
     int num_in_octal = 0;
 
     int unity_digit = num_not_octal%TEN;
