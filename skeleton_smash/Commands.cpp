@@ -1210,16 +1210,15 @@ void ChmodCommand::execute() {
     bool sign = num_not_octal<0;
 
     struct stat sb;
-
-    //int r = stat(m_cmd_line[ANOTHER_ARGS], &sb);
-
-    int current_permissions = sb.st_mode-ZERO_PERMISSIONS;
-
-    cout << "current_permissions: " << current_permissions << endl;
-
-    cout << "num_not_octal: " << num_not_octal << endl;
+    int current_permissions=0;
 
     if (sign){
+        if(stat(m_cmd_line[ANOTHER_ARGS], &sb) == -1){
+            perror("smash error: stat failed");
+            return;
+        }
+        current_permissions = sb.st_mode-ZERO_PERMISSIONS;
+
         num_not_octal*=-1;
     }
 
@@ -1247,7 +1246,7 @@ void ChmodCommand::execute() {
     }
 
     // if sign num so mul in -1
-    int res = chmod(m_cmd_line[ANOTHER_ARGS], sign ? current_permissions-num_in_octal : num_in_octal);
+    int res = chmod(m_cmd_line[ANOTHER_ARGS], (sign ? current_permissions-num_in_octal : num_in_octal));
 
     if (res == -1){
         perror("smash error: chmod failed");
