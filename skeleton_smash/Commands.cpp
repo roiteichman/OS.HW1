@@ -1210,6 +1210,8 @@ void ChmodCommand::execute() {
 
     struct stat sb;
 
+    int r = stat(m_cmd_line[ANOTHER_ARGS], &sb);
+
     int current_permissions = sb.st_mode;
 
     cout << "current_permissions: " << current_permissions << endl;
