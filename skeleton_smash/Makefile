@@ -1,4 +1,3 @@
-#TODO: replace ID with your own IDS, for example: 123456789_123456789
 SUBMITTERS := <316009885>_<318865524>
 COMPILER := g++
 COMPILER_FLAGS := --std=c++11 -Wall
