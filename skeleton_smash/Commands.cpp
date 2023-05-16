@@ -1217,13 +1217,12 @@ void ChmodCommand::execute() {
 
     cout << "current_permissions: " << current_permissions << endl;
 
-    int next_permissions=current_permissions;
+    //int next_permissions=current_permissions;
 
     cout << "num_not_octal: " << num_not_octal << endl;
 
     if (sign){
-        next_permissions+=num_not_octal;
-        cout << "next_permissions: " << next_permissions << endl;
+        num_not_octal*=-1;
     }
 
     int num_in_octal = 0;
@@ -1249,8 +1248,13 @@ void ChmodCommand::execute() {
         }
     }
 
+    cout << "num_in_octal: " << num_in_octal << endl;
+
+    cout << "current_permissions-num_in_octal: " << current_permissions-num_in_octal << endl;
+
+
     // if sign num so mul in -1
-    int res = chmod(m_cmd_line[ANOTHER_ARGS], sign ? next_permissions : num_in_octal);
+    int res = chmod(m_cmd_line[ANOTHER_ARGS], sign ? current_permissions-num_in_octal : num_in_octal);
 
     if (res == -1){
         perror("smash error: chmod failed");
