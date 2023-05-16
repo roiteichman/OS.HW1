@@ -1208,10 +1208,6 @@ void ChmodCommand::execute() {
 
     bool sign = num_not_octal<0;
 
-    if (sign){
-        num_not_octal*=-1;
-    }
-
     int num_in_octal = 0;
 
     int unity_digit = num_not_octal%TEN;
@@ -1236,7 +1232,7 @@ void ChmodCommand::execute() {
     }
 
     // if sign num so mul in -1
-    int res = chmod(m_cmd_line[ANOTHER_ARGS], sign ? num_in_octal*-1 : num_in_octal);
+    int res = chmod(m_cmd_line[ANOTHER_ARGS], sign ? num_not_octal : num_in_octal);
 
     if (res == -1){
         perror("smash error: chmod failed");
