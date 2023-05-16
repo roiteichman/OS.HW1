@@ -499,7 +499,7 @@ void ChangeDirCommand::execute() {
     }
 
     if (chdir(asked_path) != 0){
-        perror("smash error: cd failed");
+        perror("smash error: chdir failed");
         return;
     }
     else{
