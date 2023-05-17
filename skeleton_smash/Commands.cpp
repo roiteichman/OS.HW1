@@ -1164,7 +1164,7 @@ void GetFileTypeCommand::execute() {
     }
     struct stat sb;
 
-    int res = stat(m_cmd_line[1], &sb);
+    int res = lstat(m_cmd_line[1], &sb);
 
     if (res == -1){
         perror("smash error: stat failed");
