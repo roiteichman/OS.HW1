@@ -1167,7 +1167,7 @@ void GetFileTypeCommand::execute() {
     int res = lstat(m_cmd_line[1], &sb);
 
     if (res == -1){
-        perror("smash error: stat failed");
+        perror("smash error: lstat failed");
         return;
     }
 
@@ -1213,8 +1213,8 @@ void ChmodCommand::execute() {
     int current_permissions=0;
 
     if (sign){
-        if(stat(m_cmd_line[ANOTHER_ARGS], &sb) == -1){
-            perror("smash error: stat failed");
+        if(lstat(m_cmd_line[ANOTHER_ARGS], &sb) == -1){
+            perror("smash error: lstat failed");
             return;
         }
         current_permissions = sb.st_mode-ZERO_PERMISSIONS;
