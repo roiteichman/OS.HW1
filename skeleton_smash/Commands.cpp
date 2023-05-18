@@ -152,6 +152,7 @@ void cmdForBash (char** cmd_source, char* dest) {
         dest += strlen(*cmd_source++);
         *dest++ = ' ';
     }
+    *dest='\0';
 }
 
 /*-------------------
