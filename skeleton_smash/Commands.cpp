@@ -1247,7 +1247,7 @@ void ChmodCommand::execute() {
     }
 
     // if sign num so mul in -1
-    int res = chmod(m_cmd_line[ANOTHER_ARGS], (sign ? current_permissions-num_in_octal : num_in_octal));
+    int res = chmod(m_cmd_line[ANOTHER_ARGS], (sign ? ((current_permissions-num_in_octal)<=0 ? 0 : current_permissions-num_in_octal) : num_in_octal));
 
     if (res == -1){
         perror("smash error: chmod failed");
